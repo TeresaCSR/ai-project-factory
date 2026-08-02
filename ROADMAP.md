@@ -1,89 +1,113 @@
-# AI Project Factory Roadmap
+# Roadmap
 
-以下是候选方向，不是已经批准的 Contract。优先级以真实项目试用反馈为准。
+Candidate directions, not an approved contract. Priority follows what real
+project use actually turns up.
 
-## 建议的下一步顺序
+## Next
 
-### P0：用一个真实小项目跑完 2–3 天
+### P0: run one real project for two or three days
 
-已用一个全新软件项目跑完一次完整验收：GUI 创建、Discussion Commit、Goal、
-不中断 steering、Handoff 过期检测、compact 检查点、隔离冷启动接管、完成与
-API Bundle 均通过。下一步不是增加状态字段，而是让一个真实项目连续使用
-2–3 天，观察访谈自然度和 Handoff 长期维护成本。
+A full acceptance pass has already been done on a fresh software project: GUI
+creation, discussion commit, goal, uninterrupted steering, stale-handoff
+detection, compact checkpoint, cold takeover in isolation, completion, and the
+API bundle all passed.
 
-### 已完成：Codex 真实一键任务
+The next step is not more state fields. It is living with one real project for
+two or three days and watching two things: whether the interview feels natural,
+and what maintaining the handoff costs over time.
 
-v0.5.0 已改用官方 Codex App Server 创建真实任务；v0.5.1 等待隐藏 bootstrap
-完成，真实试用出现约 153 秒灰色等待。v0.5.2 的 `thread/inject_items` 虽然快，
-但 Codex Desktop 不把注入项渲染为标准 turn，第三次试用出现右侧空白任务。
-v0.5.3 改为一个严格受限的真实启动轮：标准用户消息保留完整输入，模型只回复
-启动卡，不读文件、不调用工具；`turn/start` 后立即打开，通常约 10–20 秒完成。
-Windows 子进程从创建起使用隐藏控制台，20 ms 实机采样未发现任何可见控制台
-窗口。失败会删除未完成任务并退回预填草稿。
+### Done: real one-click Codex tasks
 
-### 已完成：项目控制台与启动种子
+v0.5.0 moved to the official Codex App Server and created real tasks. v0.5.1
+waited for a hidden bootstrap to finish, which showed up in real use as roughly
+153 seconds of grey waiting. v0.5.2's `thread/inject_items` was fast, but Codex
+Desktop does not render injected items as a standard turn, so the third trial
+produced a task with a blank pane.
 
-默认项目根目录现在会显示最近 Factory 项目、Discussion/Goal、Handoff revision
-与更新时间。创建页加入可选“初始想法”，但提示中明确它只是访谈输入，不是已
-批准 Contract。UI 改为固定侧边导航与分组控制台，避免相邻标签页尺寸和选中态
-造成误判。
+v0.5.3 uses a strictly bounded but real bootstrap turn: the standard user
+message keeps the full input, the model replies with the start card only, and
+the task opens as soon as `turn/start` returns -- usually 10-20 seconds.
+Windows child processes use a hidden console from creation; 20 ms live sampling
+found no visible console window. A failure deletes the incomplete task and
+falls back to a prefilled draft.
 
-### P1：安全升级已有项目
+### Done: project console and start seed
 
-当前每个项目携带自包含 runtime，这是可迁移性的基础；代价是旧项目不会自动
-获得后续 bugfix。下一版可加入显式“检查/升级项目运行时”：
+The default project root now lists recent Factory projects with their
+discussion/goal state, handoff revision, and last update. The create page takes
+an optional initial idea, labelled in the prompt as interview input rather than
+an approved contract. Fixed side navigation replaced adjacent tabs, whose size
+and selected state were easy to misread.
 
-- 只升级 Factory 管理的 `.ai` 工具，不改 Contract、Context、Decisions；
-- 升级前备份、校验当前哈希和项目状态；
-- 支持 dry-run、版本兼容矩阵与失败回滚；
-- Constitution 仍保持创建时固定版本，除非用户明确批准迁移。
+## Later
 
-### P1：真正独立的桌面发行版
+### P1: safely upgrading existing projects
 
-固定安装目录、单一无版本号快捷方式、更新前 smoke、失败回滚和稳定图标路径已经
-由 v0.3.3 完成，并在 v0.5.3 原位承载 Codex 真实任务启动。它解决“今后更新仍
-映射到同一个桌面入口”，但仍依赖 Python 3.10+。若真实试用稳定，可再做：
+Each project carries a self-contained runtime today. That is what makes it
+portable, and the cost is that old projects do not pick up later bug fixes.
+An explicit "check / upgrade project runtime" step could:
 
-- Windows 单文件/单目录 EXE；
-- 代码签名、版本信息与可见升级提示；
-- 启动日志和一键复制诊断；
-- macOS/Linux 启动器。
+- upgrade only the Factory-managed `.ai` tools, never the contract, context, or
+  decisions;
+- back up, verify current hashes, and check project state before starting;
+- support dry-run, a version compatibility matrix, and rollback on failure;
+- keep the constitution pinned to its creation-time version unless the user
+  explicitly approves migrating it.
 
-### P1：Git 基线与备份就绪向导
+### P1: a genuinely standalone desktop build
 
-把“本地切换可用”和“可通过 clone 迁移”明确分开。向导可显示：
+A fixed install directory, a single unversioned shortcut, a smoke test before
+updating, rollback on failure, and a stable icon path all landed in v0.3.3 and
+carried the real Codex launch in v0.5.3 without changes. That solves "later
+updates still map to the same desktop entry", but it still needs Python 3.10+.
+If real use proves stable, the remaining work is:
 
-- 完整目录复制：是否可用；
-- Git 首次提交：是否存在；
-- 远程备份：是否配置；
-- memory/runtime 文件：是否被 ignore 或未跟踪。
+- a single-file or single-folder Windows executable;
+- code signing, version metadata, and a visible upgrade prompt;
+- a launch log and one-click diagnostics;
+- macOS and Linux launchers.
 
-任何提交、远程创建或 push 都应保持显式授权。
+### P1: a Git baseline and backup-readiness wizard
 
-### P2：DeepSeek/Kimi/GLM 的本地 Host
+"Works when you switch locally" and "can migrate by clone" are different
+properties, and conflating them loses work. A wizard could show:
 
-不要把某家 API 写入项目协议。单独实现可替换 Host：
+- full-folder copy: available or not;
+- first Git commit: present or not;
+- remote backup: configured or not;
+- memory and runtime files: ignored, untracked, or tracked.
 
-- 读取同一个项目目录和 `AI_START_HERE.md`；
-- 将模型 API 作为推理后端；
-- 文件、命令、浏览器和权限由 Host 提供；
-- 能力不足时退化为 Context Bundle，而不是假装拥有本地工具。
+Any commit, remote creation, or push stays explicitly authorised.
 
-### P2：宿主感知的 checkpoint
+### P2: a local host for other model APIs
 
-若某个运行时未来提供可靠的 pre-compact/session hook，可写薄适配器自动触发
-“更新语义 Handoff → checkpoint → doctor”。核心协议仍不能假设所有宿主都有
-该能力。
+Do not write any one vendor's API into the project protocol. Build a
+replaceable host instead:
 
-### P3：多人/多 Agent 协同
+- reads the same project folder and `AI_START_HERE.md`;
+- uses a model API as the reasoning backend;
+- provides files, commands, browsing, and permissions itself;
+- degrades to a context bundle when it cannot, rather than pretending to have
+  local tools.
 
-只有真实项目出现并行写入需求后，再考虑任务数据库、Handoff 合并、分支 ownership
-和冲突解决。当前“一个 Handoff 协调写者”更简单，也更不容易制造伪进度。
+### P2: host-aware checkpoints
 
-## 暂不建议
+If a runtime ever offers a reliable pre-compact or session hook, a thin adapter
+could trigger "update the semantic handoff → checkpoint → doctor"
+automatically. The core protocol still cannot assume every host has one.
 
-- 为每家模型复制一套模板或状态机；
-- 每轮聊天都更新 Handoff；
-- 把聊天全文、私人记忆或账号会话塞进项目；
-- 在没有真实试用前扩展成大型工作流平台；
-- 宣称裸 API 因为会写代码就能直接访问本地目录。
+### P3: multiple people, multiple agents
+
+Worth considering only once a real project needs parallel writes: a task
+database, handoff merging, branch ownership, conflict resolution. Today's "one
+handoff, one coordinating writer" is simpler and much less able to manufacture
+fake progress.
+
+## Explicitly not planned
+
+- A separate template or state machine per model vendor.
+- Updating the handoff every turn.
+- Putting whole chat transcripts, personal memory, or account sessions into a
+  project.
+- Growing into a large workflow platform before real use justifies it.
+- Claiming a bare API can reach local files because it can write code.

@@ -1,82 +1,86 @@
-# AI Project Factory v0.5.3 Validation
+# Validation report — v0.5.3
 
-验证日期：2026-08-02  
-验证环境：Windows、Python 3.13、Codex CLI 0.146.0；项目声明支持
-Python 3.10+。
+Date: 2026-08-02
+Environment: Windows, Python 3.13, Codex CLI 0.146.0.
+Declared support: Python 3.10+.
 
-## 结论
+## Summary
 
-v0.5.3 同时修复第三次 `元妙宇宙` 真实试用暴露的两个缺陷：
+v0.5.3 fixes two defects that only a real trial exposed.
 
-1. v0.5.2 使用 `thread/inject_items` 写入原始输入和启动卡，却没有创建标准
-   Codex turn。程序注入项存在于模型历史，但 Codex Desktop 的 `turns=[]`，
-   因而用户打开任务时右侧整片空白。
-2. `CREATE_NO_WINDOW` 没有覆盖 Codex 及其内部 Git 的全部控制台创建路径，
-   用户仍会看到一个大黑框及多次闪烁。
+**1. Injected history did not render.** v0.5.2 used `thread/inject_items` to
+write the original input and the start card. The items existed in the model's
+history, but Codex Desktop reported `turns=[]`, so opening the task showed an
+empty pane. Fast, and useless.
 
-当前实现改为一个严格受限的真实启动轮：标准 `userMessage` 保存完整项目输入，
-模型本轮只原样回复启动卡，不读取文件、不调用工具。`turn/start` 成功后任务
-立即在 Codex Desktop 打开，用户能看到生成过程；正常实测约 10 秒完成。回复
-“继续”后才开始真实访谈和工具调用。
+The fix is a strictly bounded but genuinely real bootstrap turn: a standard
+`userMessage` carries the full project input, and the model replies with the
+start card and nothing else -- no file reads, no tool calls. The task opens as
+soon as `turn/start` succeeds, so the card is generated where the user can
+watch it, in about ten seconds. The real interview begins when they reply
+`continue`.
 
-Windows 辅助进程统一使用 `CREATE_NEW_CONSOLE + STARTF_USESHOWWINDOW/SW_HIDE`，
-确保控制台从第一帧起隐藏。20 ms 频率的全进程树与顶层窗口采样覆盖项目创建、
-Git、Codex App Server 及模型启动，记录到的可见窗口数为 0。
+**2. Console windows still flashed.** `CREATE_NO_WINDOW` did not cover every
+console-creation path used by Codex and its nested Git helpers. All Windows
+helpers now use `CREATE_NEW_CONSOLE` with `STARTF_USESHOWWINDOW`/`SW_HIDE`, so
+the console is hidden from the first frame. Sampling the whole process tree and
+all top-level windows at 20 ms intervals -- across project creation, Git, the
+Codex App Server, and model startup -- recorded zero visible windows.
 
-## 真实问题取证
+## Evidence for the diagnosis
 
-| 观察 | 当前证据 | 判断 |
+| Observation | Evidence | Conclusion |
 |---|---|---|
-| v0.5.2 任务打开后右侧空白 | 保存的 session 含注入 user/assistant item，但 App 读取为 `turns=[]` | `thread/inject_items` 不能替代 Desktop 可渲染的真实 turn |
-| 同名任务似乎存在却无法交流 | 任务状态 idle、无标准首轮 | Factory 把“历史已注入”误报为“任务已就绪” |
-| 仍出现大黑框及多次闪烁 | `CREATE_NO_WINDOW` 进程追踪仍出现 Codex/Git 的 conhost | 旧隐藏策略不覆盖完整子进程树 |
-| 当前真实 `元妙宇宙` 项目仍存在并在独立推进 | 最终只读复核仍为 `discussion / none`，Handoff 已由另一任务推进 | 项目本体有效且未被本次修复删除、覆盖或重建 |
+| Task opened with an empty right pane | Saved session contained injected user/assistant items, but the app read `turns=[]` | `thread/inject_items` is not a substitute for a turn the desktop app can render |
+| A task with the right name existed but could not be talked to | Task idle, no standard first turn | Factory was reporting "history injected" as "task ready" |
+| Console window still appeared and flickered | Process tracing under `CREATE_NO_WINDOW` still showed conhost for Codex and Git | The old hiding strategy did not cover the full child process tree |
 
-## v0.5.3 修复
+## Fixes and how each was verified
 
-| 缺陷 | 修复 | 自动化或实机证据 |
+| Defect | Fix | Evidence |
 |---|---|---|
-| 注入历史不渲染、任务空白 | 使用标准 `turn/start`；真实 user/agent 两项形成一个 turn | 持久内部任务读回 `turn_count=1`、`item_count=2`，类型为 `userMessage` / `agentMessage`；随后自动删除 |
-| 重新引入长时间隐藏推理 | 启动轮只输出固定卡，不读文件、不用工具；创建 turn 后立即打开 | 实机端到端 10.058 s；用户可在 Codex 中观看 |
-| 控制台黑框/闪烁 | Factory 自有 helper 从创建起使用隐藏新控制台；App Server 不再额外运行 `codex mcp list` | 20 ms 进程树采样 `visible_windows=[]` |
-| 临时宿主加载用户工具 | 禁用 plugins、apps、shell、code-mode、in-app-browser，以及两个桌面内建 MCP | 实机首轮无外部工具审批，启动卡严格按预期输出 |
-| 启动失败留下垃圾任务 | 超时或非 completed 状态先中断，再删除未完成任务并退回预填草稿 | 故障注入回归 |
-| 用户等待任务出现在 Recents | `turn/start` 返回后马上打开深链，不等待模型完成 | 打开顺序回归：create → title → turn/start → open → completed |
+| Injected history invisible, task blank | Use a standard `turn/start`; one turn made of a real user and agent item | A persistent internal task read back `turn_count=1`, `item_count=2`, of types `userMessage` and `agentMessage`, then was deleted |
+| Long hidden reasoning reintroduced | The bootstrap turn emits a fixed card only -- no files, no tools -- and the task opens as soon as the turn exists | Live end-to-end: 10.058 s, visible to the user throughout |
+| Console window and flicker | Factory helpers use a hidden new console from creation; the App Server no longer shells out to `codex mcp list` | 20 ms process-tree sampling: `visible_windows=[]` |
+| Temporary host loading user tools | Plugins, apps, shell, code mode, in-app browser, and both built-in desktop MCP servers disabled | Live first turn requested no external tool approvals; the card matched exactly |
+| Failed startup left junk tasks | On timeout or a non-completed status, interrupt first, then delete the incomplete task and fall back to a prefilled draft | Fault-injection regression |
+| Waiting for the task to appear in Recents | Open the deep link as soon as `turn/start` returns, without waiting for the model | Ordering regression: create → title → turn/start → open → completed |
 
-## 自动化与实机验证
+## Test results
 
-| 项目 | 结果 | 证据 |
+| Area | Result | Evidence |
 |---|---|---|
-| 全量单元与故障注入 | PASS | `python -X utf8 -B -m unittest discover -s tests -v`，82/82，133.929 s |
-| 启动链与 GUI 专项 | PASS | 23/23；真实 turn、打开时序、隐藏控制台、失败清理、GUI 解锁 |
-| 真实 App Server ephemeral | PASS | `completed`；10.058 s；临时目录已删除 |
-| 标准首轮读回 | PASS | 1 turn、2 items；agent 启动卡内容与预期一致；内部任务随后删除 |
-| 进程子树与窗口追踪 | PASS | 20 ms 采样；Codex/Git/conhost 均被覆盖；0 个可见窗口 |
-| GUI smoke | PASS | source 与已安装 `current` 均 exit 0 |
-| Skill 结构 | PASS | `quick_validate.py` 返回 `Skill is valid!` |
-| Python 3.10 grammar | PASS | 22 个 Python/PYW 候选文件，0 failure |
-| wheel / ZIP 回归 | PASS | 确定性构建、manifest、全新 venv 与解压冷启动 |
-| 桌面部署 | PASS | 连续部署两次；48 个文件；同一个稳定快捷方式与 H2 图标 |
+| Full unit and fault-injection suite | PASS | `python -X utf8 -B -m unittest discover -s tests -v`, 82/82, 133.9 s |
+| Launch chain and GUI specifics | PASS | 23/23: real turn, open ordering, hidden console, failure cleanup, GUI unlock |
+| Live App Server, ephemeral | PASS | `completed` in 10.058 s; temporary folder removed |
+| Standard first turn read back | PASS | 1 turn, 2 items; agent card matched expectations; internal task deleted afterwards |
+| Process subtree and window tracking | PASS | 20 ms sampling; Codex, Git, and conhost all covered; zero visible windows |
+| GUI smoke test | PASS | Exit 0 from both the source tree and the installed `current` |
+| Skill structure | PASS | `quick_validate.py` reports valid |
+| Python 3.10 grammar | PASS | 22 Python/PYW candidate files, 0 failures |
+| Wheel and ZIP regressions | PASS | Deterministic build, manifest, cold start from a clean venv and from the extracted archive |
+| Desktop deployment | PASS | Deployed twice in a row; 48 files; same stable shortcut and H2 icon |
 
-## 正式发行
+## Release artifacts
 
-- 版本：`0.5.3`
-- wheel：`ai_project_factory_demo-0.5.3-py3-none-any.whl`
-- portable：`AI-Project-Factory-Portable-v0.5.3.zip`
-- 桌面通道：`%LOCALAPPDATA%\AI Project Factory\current`
-- 快捷方式：同一个未版本化的 `Desktop\AI Project Factory.lnk`
-- wheel：68,674 bytes，
+- Version `0.5.3`
+- Wheel `ai_project_factory_demo-0.5.3-py3-none-any.whl`, 68,674 bytes,
   SHA-256 `56081d34e8bdced3a5e38908bcc1c6af991d9c0927ae8b67435454445453652c`
-- ZIP：177,054 bytes，
+- Portable `AI-Project-Factory-Portable-v0.5.3.zip`, 177,054 bytes,
   SHA-256 `102f0cd3e0d25c36039c0df5eff3f082d07d92b83249ba4c9871dbd4e3f22239`
+- Desktop channel `%LOCALAPPDATA%\AI Project Factory\current`
+- One unversioned `Desktop\AI Project Factory.lnk`
 
-## 当前真实项目与边界
+## Limits of this report
 
-1. 用户当前的 `Documents\AI Projects\元妙宇宙` 没有被拿来做修复测试；最终
-   只读复核确认它仍存在，并已由用户的另一任务继续推进。v0.5.2 最初的注入项
-   不会被自动补成可见历史气泡，但不影响后续正常轮次继续工作。
-2. v0.5.3 只保证今后新建或重新启动的任务生成标准可见首轮，不回写既有任务。
-3. 启动卡仍需要一次短模型生成，实测约 10 秒；与 v0.5.1 的约 153 秒完整项目
-   分析不同，这一轮只做交接确认，并且任务已打开、过程可见。
-4. 当前完整矩阵运行于 Python 3.13；Python 3.10 通过语法检查，但未运行完整矩阵。
-5. 仓库仍为 `UNBORN`；首次提交前跨机器迁移必须复制完整目录。
+1. v0.5.3 guarantees a standard, visible first turn for tasks created or
+   restarted from now on. It does not rewrite tasks that already exist, and
+   items injected by v0.5.2 are not retrofitted into visible history. Later
+   turns in those tasks still work normally.
+2. The start card still requires one short model generation, measured at about
+   ten seconds. That is a deliberate trade against v0.5.1's roughly 153-second
+   full project analysis: this turn only confirms the handoff, and the task is
+   already open while it happens.
+3. The full matrix ran locally on Python 3.13. Python 3.10 passed a grammar
+   check but not the full local matrix; CI covers 3.10 through 3.13 on Ubuntu,
+   Windows, and macOS.

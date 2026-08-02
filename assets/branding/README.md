@@ -1,31 +1,47 @@
-# AI Project Factory Branding
+# Branding
 
-`icon-concepts/round-1/` contains four first-round visual directions:
+<img src="master/ai-project-factory-h2-512.png" width="96" alt="H2 Transfer Frame">
 
-- A — Portable Portal: one stable entrance across model providers.
-- B — Handoff Fold: project continuity through a portable handoff.
-- C — Layered Core: Constitution, Contract, and Goal around one core.
-- D — Relay Orbit: multiple agents continuing around one project core.
+**H2 — Transfer Frame** is the mark. Two open, rotationally symmetric frames:
+different agents, continuing around one portable project core.
 
-`icon-concepts/round-2/` narrows the strongest ideas into:
+It came out of two rounds of exploration. The first round covered four
+directions -- a portable portal, a handoff fold, a layered core, and a relay
+orbit -- and the second narrowed to a core gate, open layers, and this. The
+concept sheets are not committed; only the approved mark and the code that
+generates it are, so nothing here can drift out of sync with what ships.
 
-- A2 — Core Gate: a stable entrance around one project core.
-- C2 — Open Layers: three project layers opening toward a portable core.
-- H2 — Transfer Frame: one core continuing between two agent frames.
+## Artwork
 
-**H2 — Transfer Frame is the approved final mark.** Its two open, rotationally
-symmetric frames represent different Agents continuing around one portable
-project core. The production artwork is deterministic and flat:
+| File | Role |
+|---|---|
+| `master/ai-project-factory-h2.svg` | Vector source of truth |
+| `master/ai-project-factory-h2-512.png` | 512 px raster master |
+| `previews/ai-project-factory-h2-qa.png` | Light/dark size QA sheet |
+| `desktop/ai-project-factory.ico` | 16/20/24/32/40/48/64/128/256 px frames |
 
-- `master/ai-project-factory-h2.svg` is the vector source of truth;
-- `master/ai-project-factory-h2-512.png` is the 512 px raster master;
-- `previews/ai-project-factory-h2-qa.png` is the light/dark size QA sheet;
-- `desktop/ai-project-factory.ico` contains independently rendered
-  16/20/24/32/40/48/64/128/256 px frames.
+![Size QA sheet](previews/ai-project-factory-h2-qa.png)
 
-Run `scripts/build_brand_assets.py` to rebuild all four outputs from the same
-geometry constants. Small ICO frames use explicit optical stroke, gap, and core
-adjustments instead of shrinking one large PNG. Then run
-`scripts/deploy_windows_desktop.py`: the existing Desktop shortcut keeps the
-same name and launcher target, while its icon points to the new
-content-addressed H2 ICO so Windows cannot reuse a stale preview from cache.
+Every output is generated from one set of geometry constants:
+
+```bash
+python scripts/build_brand_assets.py
+```
+
+The build is deterministic -- run it twice and the bytes match -- and the test
+suite rebuilds each asset and compares it against what is committed, so a stale
+checked-in file fails CI rather than shipping quietly.
+
+The small ICO frames are rendered independently, with explicit optical
+adjustments to stroke weight, gap, and core size. Downscaling one large PNG
+turns the frames to mush at 16 px, which is the size users actually see most.
+
+To pick the new icon up on the desktop:
+
+```bash
+python scripts/deploy_windows_desktop.py
+```
+
+The shortcut keeps its name and launcher target; only the icon path changes, to
+a content-addressed filename, because Windows will otherwise serve a stale
+preview from its icon cache indefinitely.
