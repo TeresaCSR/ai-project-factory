@@ -52,11 +52,13 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           Xvfb :99 -screen 0 1280x1024x24 > /dev/null 2>&1 &
-          for _ in $(seq 1 30); do
-            xdpyinfo -display :99 > /dev/null 2>&1 && break
-            sleep 0.5
+          # Wait on the X socket rather than probing with xdpyinfo, which
+          # lives in a separate package that is not on the image.
+          for _ in $(seq 1 40); do
+            [ -S /tmp/.X11-unix/X99 ] && break
+            sleep 0.25
           done
-          xdpyinfo -display :99 > /dev/null
+          test -S /tmp/.X11-unix/X99
 
       # The wheel builder passes --no-build-isolation so the build is
       # reproducible, which means the backend has to be importable already.

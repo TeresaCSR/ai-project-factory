@@ -1,0 +1,25 @@
+# Normalise to LF in the repository and on checkout everywhere.
+#
+# The brand assets are generated and then compared against what is committed,
+# byte for byte in the SVG's case. With the default Windows behaviour git
+# rewrites LF to CRLF on checkout, so the committed SVG reads back with
+# different bytes than the builder produces and the comparison fails on
+# Windows only. Pinning eol=lf keeps generated and committed files identical
+# on every platform.
+* text=auto eol=lf
+
+*.py   text eol=lf
+*.md   text eol=lf
+*.toml text eol=lf
+*.yml  text eol=lf
+*.json text eol=lf
+*.svg  text eol=lf
+
+# Never touch the rasters.
+*.png binary
+*.ico binary
+
+# Windows entry points are launched by the shell, not by git; CRLF is what
+# cmd and wscript expect.
+*.cmd text eol=crlf
+*.vbs text eol=crlf
