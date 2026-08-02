@@ -1,0 +1,20 @@
+{
+  "schema_version": "ai-project-factory/state-v1",
+  "factory_version": "{{FACTORY_VERSION}}",
+  "template_version": "{{TEMPLATE_VERSION}}",
+  "constitution_version": "{{CONSTITUTION_VERSION}}",
+  "project_name": "{{PROJECT_NAME_JSON}}",
+  "profile": "{{PROFILE}}",
+  "mode": "discussion",
+  "goal_status": "none",
+  "active_goal_id": null,
+  "contract_revision": 0,
+  "active_goal_revision": 0,
+  "contract_fingerprint": null,
+  "active_goal_fingerprint": null,
+  "handoff_revision": 0,
+  "created_at": "{{TIMESTAMP}}",
+  "updated_at": "{{TIMESTAMP}}",
+  "last_transition": "initialized",
+  "pause_reason": null
+}

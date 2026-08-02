@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-project-factory-demo"
+version = "0.5.3"
+description = "Model-neutral AI project bootstrap, lifecycle, and handoff demo"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+branding = ["Pillow>=12,<13"]
+
+[project.scripts]
+ai-project-factory = "ai_project_factory.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+ai_project_factory = [
+  "runtime/*.py",
+  "templates/v1/*",
+  "templates/v1/.gitignore",
+  "templates/v1/.ai/*",
+  "resources/agent-skills/ai-project-factory/*",
+  "resources/agent-skills/ai-project-factory/agents/*",
+  "resources/agent-skills/ai-project-factory/scripts/*",
+]

@@ -1,0 +1,242 @@
+{
+  "schema_version": "ai-project-factory/portable-release-v1",
+  "version": "0.5.3",
+  "archive_root": "AI-Project-Factory-Portable",
+  "files": [
+    {
+      "path": "AI Project Factory.cmd",
+      "size": 970,
+      "sha256": "47cde5feadd9c818da507f24f3644d98374c5421e15cd353a95f3f76639126cb"
+    },
+    {
+      "path": "Install or Update Desktop Shortcut.cmd",
+      "size": 698,
+      "sha256": "961a4b6cb746ec7e7ddbbef39bbf4ccda547c4d123d020b1ae9de743c5d6c2f5"
+    },
+    {
+      "path": "MORNING_ACCEPTANCE.md",
+      "size": 3118,
+      "sha256": "9a8b3f09988c0d82c72d3866aa5a94a16e7a0a7ccb0202668ee15c99e6c5197b"
+    },
+    {
+      "path": "README.md",
+      "size": 13270,
+      "sha256": "74804d46268b845810ed13e001753419e7bab1680b195e001db5235212ab546a"
+    },
+    {
+      "path": "ROADMAP.md",
+      "size": 4196,
+      "sha256": "305d3169508ba539cd2678caaac1b96886d7a76c75b166ab32a6584244cb50eb"
+    },
+    {
+      "path": "VALIDATION.md",
+      "size": 5590,
+      "sha256": "84514967c314f1e707c0470da92247bf67e48b47cd6578352f8a4d3b5035059b"
+    },
+    {
+      "path": "assets/branding/README.md",
+      "size": 1633,
+      "sha256": "17cbaabf1639ef553a57ad2b756f8869c77b2789e8abfef730b466f6542a7262"
+    },
+    {
+      "path": "assets/branding/desktop/ai-project-factory.ico",
+      "size": 27705,
+      "sha256": "e87c19ec95745a717ff16009ab472b8c26f225c8e44acb66a7b384c33baeddda"
+    },
+    {
+      "path": "assets/branding/master/ai-project-factory-h2-512.png",
+      "size": 22214,
+      "sha256": "ec789c504b77e846c3540de05137a8bb6ca05d85cba6e009d60bfeda7831f0af"
+    },
+    {
+      "path": "assets/branding/master/ai-project-factory-h2.svg",
+      "size": 895,
+      "sha256": "6414e236d02e6e17ff149c85e1ad9503e9a884f3a157ec4e3b7981d17d92f27b"
+    },
+    {
+      "path": "launch_factory.pyw",
+      "size": 1649,
+      "sha256": "2ce4036c144d39863a6669f687d9271a793bdb0dfe7051cdec1ede5816c6dc9c"
+    },
+    {
+      "path": "pyproject.toml",
+      "size": 838,
+      "sha256": "950e2c5b8db8cab07f73ead3b1886bb3972123aa1e9d36d1e23d2d9245b89fc6"
+    },
+    {
+      "path": "run_factory.py",
+      "size": 329,
+      "sha256": "29045862f56e814f4ff4a46393a9b88f9f7818584dcbae462cb018f87867a2ff"
+    },
+    {
+      "path": "scripts/build_brand_assets.py",
+      "size": 11471,
+      "sha256": "982f6bb84883b58a68b6455f0add9581ddba0c711964604a93bea264e40ce40f"
+    },
+    {
+      "path": "scripts/build_desktop_icon.py",
+      "size": 2832,
+      "sha256": "c1d73b4b5c95e62a5fa7b8eb42ce239896e0da4fe9bba0ba2a979acb090263a4"
+    },
+    {
+      "path": "scripts/build_portable_release.py",
+      "size": 6130,
+      "sha256": "f1f28fc36eec1c029cad14c6b64588165c6e417615720ce5ba5d2e41172dde9f"
+    },
+    {
+      "path": "scripts/build_wheel_release.py",
+      "size": 5946,
+      "sha256": "666b19ddb001744b3533a8e89786bffe3b44aca50a898fbb42d871a63a1cb554"
+    },
+    {
+      "path": "scripts/deploy_windows_desktop.py",
+      "size": 24374,
+      "sha256": "c4fce9feae3181245d781a0e9a0d598abf135aed1de8c127b7326d86607e4587"
+    },
+    {
+      "path": "src/ai_project_factory/__init__.py",
+      "size": 387,
+      "sha256": "5c8ed1e26fb263ebd9f5bb2ff2aeef8e08d3b300636e60660582591da49b3d53"
+    },
+    {
+      "path": "src/ai_project_factory/__main__.py",
+      "size": 49,
+      "sha256": "0f7d54f3fbb1f79a85eb8110f11793db99da6f3c61ee979de5abe9a1b5f3fdb3"
+    },
+    {
+      "path": "src/ai_project_factory/cli.py",
+      "size": 4429,
+      "sha256": "8ef5ab11c89b62474c406dc99d8ae68bf3d431fd66d4d2c67749db41bde4abd1"
+    },
+    {
+      "path": "src/ai_project_factory/core.py",
+      "size": 73091,
+      "sha256": "c0437c9bbe6b297ab3ed03af6e634afbbcd72ccf1a0c45db3cf05dd67724bf93"
+    },
+    {
+      "path": "src/ai_project_factory/gui.py",
+      "size": 39758,
+      "sha256": "d45849ed61ca43bc407805bd37e9db292d66d7661f77fe93a3d091d23dc5622b"
+    },
+    {
+      "path": "src/ai_project_factory/resources/agent-skills/ai-project-factory/SKILL.md",
+      "size": 3384,
+      "sha256": "02556cdca5e944aafaa6a9be3190c263a664c84ee37c5c2d9195a82f7e062b51"
+    },
+    {
+      "path": "src/ai_project_factory/resources/agent-skills/ai-project-factory/agents/openai.yaml",
+      "size": 261,
+      "sha256": "8766ef5b31a6db9faa75b91fdb741c19e6d67aedb36124477ef58e6dedec8203"
+    },
+    {
+      "path": "src/ai_project_factory/resources/agent-skills/ai-project-factory/scripts/factory_bridge.py",
+      "size": 1285,
+      "sha256": "a1e239fd870cb42a371403fb69a80cb1e96f830e4d988f7f93e91f0e2d5650ee"
+    },
+    {
+      "path": "src/ai_project_factory/runtime/project_memory.py",
+      "size": 48776,
+      "sha256": "8bf98287c9146a3f097e34b721f6364fc5b35793ca795f91e7dd8818106e7472"
+    },
+    {
+      "path": "src/ai_project_factory/templates/v1/.ai/project_runtime.py",
+      "size": 48682,
+      "sha256": "7deae58085663ec0745d77c63768f12aabf8e9bcf0a4743beaa2d47a051e80e6"
+    },
+    {
+      "path": "src/ai_project_factory/templates/v1/.gitignore",
+      "size": 143,
+      "sha256": "6b2cbb075c26e4eae4712cce6801bf1bd5e4d55062a85fcbf150b0b0385133e6"
+    },
+    {
+      "path": "src/ai_project_factory/templates/v1/ACTIVE_GOAL.md",
+      "size": 499,
+      "sha256": "06f1d0943673d8c415484177cda4d95cff3ba97df63f73a685e93964f8d166c6"
+    },
+    {
+      "path": "src/ai_project_factory/templates/v1/AGENTS.md",
+      "size": 257,
+      "sha256": "4f00f6c0f1b189919e2c68381dd6d7a8169fa82c1fccc14e21372a4cbba13d6c"
+    },
+    {
+      "path": "src/ai_project_factory/templates/v1/AI_PROJECT.json",
+      "size": 617,
+      "sha256": "91d2933adb80b86d6633b9a2ccf7637877308f4466b92d16093d44bb58f81e2e"
+    },
+    {
+      "path": "src/ai_project_factory/templates/v1/AI_START_HERE.md",
+      "size": 3643,
+      "sha256": "0009d6e96c8e5f64f6265be653e4ba2051ee5fc560c43d80a31259178a81aea5"
+    },
+    {
+      "path": "src/ai_project_factory/templates/v1/ARTIFACTS.md",
+      "size": 945,
+      "sha256": "437b94d8e3c064684295cad288fffa6f9b6fed725c498c4a115f54893399f892"
+    },
+    {
+      "path": "src/ai_project_factory/templates/v1/CLAUDE.md",
+      "size": 11,
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "src/ai_project_factory/templates/v1/CONSTITUTION.md",
+      "size": 1454,
+      "sha256": "e8673dddaef0124460a0bb099395c49b947ea0112703e120c840dda19af8031f"
+    },
+    {
+      "path": "src/ai_project_factory/templates/v1/DECISIONS.md",
+      "size": 821,
+      "sha256": "c332ab077baa20fc251c09daea128bd7833f074ec130c5eda6bcf95c65432b38"
+    },
+    {
+      "path": "src/ai_project_factory/templates/v1/HANDOFF.md",
+      "size": 1575,
+      "sha256": "dba0d526e84da0a997f0a10e5ec871566ad79616431b03eedc7bd84552d321dd"
+    },
+    {
+      "path": "src/ai_project_factory/templates/v1/MIGRATION_PROMPT.md",
+      "size": 1183,
+      "sha256": "692ba2c074c0f59f47564badf2b75866841b53dabba6f648e6f9d5d370b8285f"
+    },
+    {
+      "path": "src/ai_project_factory/templates/v1/PROJECT_CONTEXT.md",
+      "size": 1086,
+      "sha256": "7de13f73399d81ee51e0faa5db47470f3de12d5fac198ef319b29cf34d82186b"
+    },
+    {
+      "path": "src/ai_project_factory/templates/v1/PROJECT_CONTRACT.md",
+      "size": 1164,
+      "sha256": "697e662bee234fd9dc62337d3ff654a30476d1ae2c3bcbbb758becb78ce9b9a0"
+    },
+    {
+      "path": "tests/test_brand_assets.py",
+      "size": 3387,
+      "sha256": "116de7677b263c7bc8ac09413392201808ade6e73a50332b6fff817a0b9248b0"
+    },
+    {
+      "path": "tests/test_codex_launch.py",
+      "size": 17311,
+      "sha256": "5654ad2cc20a67d1a5c5ad130b50c29f128a680993be9660c1789a0ba133043e"
+    },
+    {
+      "path": "tests/test_desktop_deploy.py",
+      "size": 13699,
+      "sha256": "4470c81608bffd82b57db79755171decc24b70559b13d58aa860e95407e879f3"
+    },
+    {
+      "path": "tests/test_factory.py",
+      "size": 61992,
+      "sha256": "fbdb9921b5f8f21d160aa2191136c6556e92d7af5891e4e41c2c98eb39d02890"
+    },
+    {
+      "path": "tests/test_gui.py",
+      "size": 9199,
+      "sha256": "30e22ba286d24d21058360005293eb1a7da74c0063a7c92a88d7934ed3f6a400"
+    },
+    {
+      "path": "tests/test_release.py",
+      "size": 13299,
+      "sha256": "dde55f3924450f00e1b55d6dc160ef2c3d4a720d9b17e7276b83d35f647cfc28"
+    }
+  ]
+}

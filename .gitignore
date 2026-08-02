@@ -1,0 +1,21 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Deployment state written by scripts/deploy_windows_desktop.py. It records
+# absolute paths on the machine it ran on, so it is per-install, not source.
+.desktop-deploy.lock
+DEPLOYMENT.json
+
+# Projects the Factory creates live outside the repo; never commit a user's.
+projects/

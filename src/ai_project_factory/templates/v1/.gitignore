@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+.ai/lifecycle_transaction.json
+.ai/lifecycle.lock
+.ai/runtime-tmp/

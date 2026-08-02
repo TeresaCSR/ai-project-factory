@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">AI Project Factory H2 Transfer Frame</title>
+  <desc id="desc">One portable project core continuing between two open agent frames.</desc>
+  <rect x="8" y="8" width="496" height="496" rx="96" fill="#F7F8F6" stroke="#14283A" stroke-opacity=".78" stroke-width="2"/>
+  <path d="M 303 192 V 125 Q 303 112 290 112 H 125 Q 112 112 112 125 V 270 Q 112 283 125 283 H 198" fill="none" stroke="#14283A" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 209 320 V 387 Q 209 400 222 400 H 387 Q 400 400 400 387 V 242 Q 400 229 387 229 H 314" fill="none" stroke="#14283A" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="227" y="227" width="58" height="58" rx="7" fill="#19A69A"/>
+</svg>
