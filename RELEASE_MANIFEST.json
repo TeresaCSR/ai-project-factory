@@ -1,6 +1,6 @@
 {
   "schema_version": "ai-project-factory/portable-release-v1",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "archive_root": "AI-Project-Factory-Portable",
   "files": [
     {
@@ -14,24 +14,19 @@
       "sha256": "961a4b6cb746ec7e7ddbbef39bbf4ccda547c4d123d020b1ae9de743c5d6c2f5"
     },
     {
-      "path": "MORNING_ACCEPTANCE.md",
-      "size": 3118,
-      "sha256": "9a8b3f09988c0d82c72d3866aa5a94a16e7a0a7ccb0202668ee15c99e6c5197b"
-    },
-    {
       "path": "README.md",
-      "size": 13270,
-      "sha256": "74804d46268b845810ed13e001753419e7bab1680b195e001db5235212ab546a"
+      "size": 8626,
+      "sha256": "d03b4d64bb537e440c8fe1d4fb4c3bb7391c247b32c7a071d7e4ea1766e4228f"
     },
     {
       "path": "ROADMAP.md",
-      "size": 4196,
-      "sha256": "305d3169508ba539cd2678caaac1b96886d7a76c75b166ab32a6584244cb50eb"
+      "size": 4778,
+      "sha256": "de5f8b971d3b114d52a95d8d3a4e9fe833d37b319c8a3491a7673f5473c03192"
     },
     {
       "path": "VALIDATION.md",
-      "size": 5590,
-      "sha256": "84514967c314f1e707c0470da92247bf67e48b47cd6578352f8a4d3b5035059b"
+      "size": 5621,
+      "sha256": "58130a5ecb61707bb41e51f197d4e0b87b21a603f634728aff6005e45fce235f"
     },
     {
       "path": "assets/branding/README.md",
@@ -54,14 +49,29 @@
       "sha256": "6414e236d02e6e17ff149c85e1ad9503e9a884f3a157ec4e3b7981d17d92f27b"
     },
     {
+      "path": "docs/first-run.md",
+      "size": 3209,
+      "sha256": "21067711d13f214376ee0bdedf45add50f20720c75e454420bd803e868eb13ae"
+    },
+    {
+      "path": "docs/screenshot-console.png",
+      "size": 39763,
+      "sha256": "c6abe4ccc0c816902fe97ce7254e4bea0d02750d47418d6e2cf8b00a891a3fc6"
+    },
+    {
+      "path": "docs/screenshot-create.png",
+      "size": 35776,
+      "sha256": "73a0db43cc0f51014a2105cabead1bbb279d543d754d2330df38fbff283bc02e"
+    },
+    {
       "path": "launch_factory.pyw",
       "size": 1649,
       "sha256": "2ce4036c144d39863a6669f687d9271a793bdb0dfe7051cdec1ede5816c6dc9c"
     },
     {
       "path": "pyproject.toml",
-      "size": 838,
-      "sha256": "950e2c5b8db8cab07f73ead3b1886bb3972123aa1e9d36d1e23d2d9245b89fc6"
+      "size": 872,
+      "sha256": "0ade0422972a65f3484fcb6d56fe28b9f2c2b3f3f70d54c6b67617e2b549ad05"
     },
     {
       "path": "run_factory.py",
@@ -80,13 +90,18 @@
     },
     {
       "path": "scripts/build_portable_release.py",
-      "size": 6130,
-      "sha256": "f1f28fc36eec1c029cad14c6b64588165c6e417615720ce5ba5d2e41172dde9f"
+      "size": 7550,
+      "sha256": "5dd15e510a73602c0e0515bcfb6772a76c12045ec3c231f6e333560620a336ea"
     },
     {
       "path": "scripts/build_wheel_release.py",
       "size": 5946,
       "sha256": "666b19ddb001744b3533a8e89786bffe3b44aca50a898fbb42d871a63a1cb554"
+    },
+    {
+      "path": "scripts/capture_screenshots.py",
+      "size": 7175,
+      "sha256": "e75315ba8c79e493a5f289d0412271b96833dabf4c23e2ad131597b29710db2e"
     },
     {
       "path": "scripts/deploy_windows_desktop.py",
@@ -106,17 +121,17 @@
     {
       "path": "src/ai_project_factory/cli.py",
       "size": 4429,
-      "sha256": "8ef5ab11c89b62474c406dc99d8ae68bf3d431fd66d4d2c67749db41bde4abd1"
+      "sha256": "791c60a60a64f4a273e7dc1439dee3d09706c8dca3ee99f31add9fbdb1665597"
     },
     {
       "path": "src/ai_project_factory/core.py",
-      "size": 73091,
-      "sha256": "c0437c9bbe6b297ab3ed03af6e634afbbcd72ccf1a0c45db3cf05dd67724bf93"
+      "size": 76167,
+      "sha256": "6bf0e0ef0c396bd46cc455f13d996cc1ab0f6b2cee84fb30b92ba26e92b57528"
     },
     {
       "path": "src/ai_project_factory/gui.py",
-      "size": 39758,
-      "sha256": "d45849ed61ca43bc407805bd37e9db292d66d7661f77fe93a3d091d23dc5622b"
+      "size": 40324,
+      "sha256": "e88a9793f5c200f1dca1255e5983aa9996c80f6c85a8396878f2f8fcbce371f7"
     },
     {
       "path": "src/ai_project_factory/resources/agent-skills/ai-project-factory/SKILL.md",
@@ -125,8 +140,8 @@
     },
     {
       "path": "src/ai_project_factory/resources/agent-skills/ai-project-factory/agents/openai.yaml",
-      "size": 261,
-      "sha256": "8766ef5b31a6db9faa75b91fdb741c19e6d67aedb36124477ef58e6dedec8203"
+      "size": 253,
+      "sha256": "308d68b9bf68f88e3c95d0a8a5cd95cbc0c819f815a1acf35856228deea73be4"
     },
     {
       "path": "src/ai_project_factory/resources/agent-skills/ai-project-factory/scripts/factory_bridge.py",
@@ -135,8 +150,8 @@
     },
     {
       "path": "src/ai_project_factory/runtime/project_memory.py",
-      "size": 48776,
-      "sha256": "8bf98287c9146a3f097e34b721f6364fc5b35793ca795f91e7dd8818106e7472"
+      "size": 48915,
+      "sha256": "2c7a6367c440cb60fdb9e3a7d90a0e3cadda38f34c3539b37aea64306653c8b2"
     },
     {
       "path": "src/ai_project_factory/templates/v1/.ai/project_runtime.py",
@@ -170,8 +185,8 @@
     },
     {
       "path": "src/ai_project_factory/templates/v1/ARTIFACTS.md",
-      "size": 945,
-      "sha256": "437b94d8e3c064684295cad288fffa6f9b6fed725c498c4a115f54893399f892"
+      "size": 994,
+      "sha256": "a182a561a776a1c4a798810a5f4559427ba9a8b1b3a8834dbb468348df0e433e"
     },
     {
       "path": "src/ai_project_factory/templates/v1/CLAUDE.md",
@@ -185,8 +200,8 @@
     },
     {
       "path": "src/ai_project_factory/templates/v1/DECISIONS.md",
-      "size": 821,
-      "sha256": "c332ab077baa20fc251c09daea128bd7833f074ec130c5eda6bcf95c65432b38"
+      "size": 855,
+      "sha256": "921ee9248ab6f40f6aa5cbd43edbb235ff4a5994aa2aec3b389a501e42d9ee20"
     },
     {
       "path": "src/ai_project_factory/templates/v1/HANDOFF.md",
@@ -210,33 +225,33 @@
     },
     {
       "path": "tests/test_brand_assets.py",
-      "size": 3387,
-      "sha256": "116de7677b263c7bc8ac09413392201808ade6e73a50332b6fff817a0b9248b0"
+      "size": 5540,
+      "sha256": "62b5779ec16d054a1fab2296c4b98715a99ed36ad0fe511412578472ba0cdd1b"
     },
     {
       "path": "tests/test_codex_launch.py",
-      "size": 17311,
-      "sha256": "5654ad2cc20a67d1a5c5ad130b50c29f128a680993be9660c1789a0ba133043e"
+      "size": 18344,
+      "sha256": "85c8550e5f8ce4f06a5daee2ce1e1cd165d798e36af65fe6cafb6dfb434a0753"
     },
     {
       "path": "tests/test_desktop_deploy.py",
-      "size": 13699,
-      "sha256": "4470c81608bffd82b57db79755171decc24b70559b13d58aa860e95407e879f3"
+      "size": 14921,
+      "sha256": "1a7c11f5fedc102653e1439e738619a50e47bf43f283da5db64ad71d176c0334"
     },
     {
       "path": "tests/test_factory.py",
-      "size": 61992,
-      "sha256": "fbdb9921b5f8f21d160aa2191136c6556e92d7af5891e4e41c2c98eb39d02890"
+      "size": 64890,
+      "sha256": "c1056d9636f125489609d6cd35aa91ce8d5c66414f6cd95ef68373f0d2c19040"
     },
     {
       "path": "tests/test_gui.py",
-      "size": 9199,
-      "sha256": "30e22ba286d24d21058360005293eb1a7da74c0063a7c92a88d7934ed3f6a400"
+      "size": 9323,
+      "sha256": "057946f37b53b52066b0c6080345df293ff429067180a1c6a0fd76109e8d3da7"
     },
     {
       "path": "tests/test_release.py",
-      "size": 13299,
-      "sha256": "dde55f3924450f00e1b55d6dc160ef2c3d4a720d9b17e7276b83d35f647cfc28"
+      "size": 14758,
+      "sha256": "a31bc8c603f8b58f1306de7d4697199a4c8f66ac21346ee3ee422a4a818adec7"
     }
   ]
 }

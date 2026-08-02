@@ -20,10 +20,14 @@ ROOT_FILES = (
     "AI Project Factory.cmd",
     "Install or Update Desktop Shortcut.cmd",
     "launch_factory.pyw",
-    "MORNING_ACCEPTANCE.md",
     "README.md",
     "ROADMAP.md",
     "VALIDATION.md",
+    "docs/first-run.md",
+    # The README links these; without them the portable copy shows two broken
+    # images to anyone who opens it offline.
+    "docs/screenshot-create.png",
+    "docs/screenshot-console.png",
     "assets/branding/README.md",
     "assets/branding/desktop/ai-project-factory.ico",
     "pyproject.toml",
