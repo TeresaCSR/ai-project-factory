@@ -1,0 +1,105 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: py${{ matrix.python }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.10", "3.13"]
+        include:
+          - os: ubuntu-latest
+            python: "3.11"
+          - os: ubuntu-latest
+            python: "3.12"
+          - os: macos-latest
+            python: "3.13"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      # Tkinter is part of the standard library but is packaged separately on
+      # Debian-family images, and the GUI module imports it at module scope.
+      - name: Install Tk on Linux
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y python3-tk
+
+      # Pillow is only needed to rebuild the brand assets. The suite skips
+      # those tests without it, so this run proves the rest is dependency-free.
+      - name: Test without optional dependencies
+        run: python -c "import unittest,sys; sys.path[:0]=['src','tests']; r=unittest.TextTestRunner(verbosity=1).run(unittest.TestLoader().discover('tests', top_level_dir='tests')); sys.exit(bool(r.failures or r.errors))"
+
+      - name: Install the branding extra
+        run: python -m pip install -e ".[branding]"
+
+      # With Pillow present the brand-asset tests run for real: they rebuild
+      # every asset twice and compare both against each other and against what
+      # is committed, so a stale checked-in asset fails the build.
+      - name: Test with branding dependencies
+        run: python -c "import unittest,sys; sys.path[:0]=['src','tests']; r=unittest.TextTestRunner(verbosity=1).run(unittest.TestLoader().discover('tests', top_level_dir='tests')); sys.exit(bool(r.failures or r.errors))"
+
+  cli:
+    name: CLI smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: sudo apt-get update && sudo apt-get install -y python3-tk
+      - run: python -m pip install -e .
+      - name: Create a project and assert the whole fact layer is written
+        run: |
+          set -euo pipefail
+          ai-project-factory --help > /dev/null
+
+          workdir=$(mktemp -d)
+          python -m ai_project_factory create --parent "$workdir" --name "CI Smoke" --no-git
+          project="$workdir/CI Smoke"
+
+          # Creating a project is the product's core promise, so the smoke test
+          # names every file it must produce rather than just checking the exit
+          # code -- a create that silently writes half a project would pass a
+          # looser check.
+          for f in AI_PROJECT.json AI_START_HERE.md CONSTITUTION.md \
+                   PROJECT_CONTRACT.md PROJECT_CONTEXT.md DECISIONS.md \
+                   ACTIVE_GOAL.md HANDOFF.md ARTIFACTS.md \
+                   AGENTS.md CLAUDE.md MIGRATION_PROMPT.md \
+                   .ai/project_runtime.py .ai/project_memory.py .ai/lifecycle.lock; do
+            test -f "$project/$f" || { echo "MISSING: $f"; exit 1; }
+          done
+          echo "fact layer complete: $(find "$project" -type f | wc -l) files"
+
+  build:
+    name: Build distributions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m pip install build twine
+      - run: python -m build
+      - run: python -m twine check dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
