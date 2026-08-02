@@ -23,7 +23,7 @@ from pathlib import Path
 from typing import Callable, Iterable
 
 
-FACTORY_VERSION = "0.5.3"
+FACTORY_VERSION = "0.5.4"
 TEMPLATE_VERSION = "0.1.0-demo"
 CONSTITUTION_VERSION = "1.0.0-demo"
 PROFILES = ("general", "software", "research")
@@ -120,21 +120,25 @@ class ProjectSummary:
 
 AGENT_PROMPTS = {
     "start": (
-        "请读取 AI_START_HERE.md，并按其中当前模式的读取顺序开始。"
-        "如果是 Discussion，请检查本地事实并开始启动访谈；不要提前编造"
-        " Contract。若已在 Goal 模式，请核验 HANDOFF 后继续执行。"
+        "Read AI_START_HERE.md and follow the reading order it gives for the "
+        "current mode. In Discussion, check the local facts and begin the "
+        "opening interview -- do not invent a contract ahead of it. If the "
+        "project is already in Goal, verify HANDOFF and carry on."
     ),
     "prepare": (
-        "我要准备 compact、切换聊天或切换 Agent。请先把自上次检查点以来"
-        "的实质进展、证据、风险和下一步更新到 HANDOFF.md；不要记录聊天"
-        "流水账。随后运行项目 checkpoint 与 doctor，并明确告诉我是否可以"
-        "安全切换。"
+        "I am about to compact, switch chats, or switch agents. First update "
+        "HANDOFF.md with the substantive progress, evidence, risks, and next "
+        "step since the last checkpoint -- not a transcript of the "
+        "conversation. Then run the project checkpoint and doctor, and tell "
+        "me plainly whether it is safe to switch."
     ),
     "takeover": (
-        "请接管这个项目。先读取 AI_START_HERE.md，按其中顺序核验"
-        " PROJECT_CONTRACT、ACTIVE_GOAL、HANDOFF 和实际成果。先报告当前"
-        "模式、已批准目标、已验证状态与下一动作；不要根据旧聊天或缺失信息"
-        "自行补全。如果 Goal 为 active，报告后继续执行。"
+        "Take over this project. Read AI_START_HERE.md first, then verify "
+        "PROJECT_CONTRACT, ACTIVE_GOAL, HANDOFF, and the actual artifacts in "
+        "that order. Report the current mode, the approved goal, what is "
+        "verified, and the next action before doing anything else -- do not "
+        "fill gaps from an old chat or from missing information. If the goal "
+        "is active, continue once you have reported."
     ),
 }
 
@@ -175,7 +179,7 @@ def safe_directory_name(raw: str) -> str:
     value = re.sub(r'[<>:"/\\|?*\x00-\x1f]', "-", raw.strip())
     value = re.sub(r"\s+", " ", value).rstrip(" .")
     if not value:
-        raise FactoryError("项目名称不能生成有效的目录名。")
+        raise FactoryError("The project name does not yield a usable folder name.")
     if value.upper() in {
         "CON",
         "PRN",
@@ -191,18 +195,18 @@ def safe_directory_name(raw: str) -> str:
 def validate_request(request: CreateProjectRequest) -> tuple[Path, str]:
     name = re.sub(r"\s+", " ", request.project_name.strip())
     if not name:
-        raise FactoryError("项目名称不能为空。")
+        raise FactoryError("The project name cannot be empty.")
     if any(ord(character) < 32 or ord(character) == 127 for character in name):
-        raise FactoryError("项目名称不能包含控制字符。")
+        raise FactoryError("The project name cannot contain control characters.")
     if request.profile not in PROFILES:
         raise FactoryError(
-            f"未知 Profile：{request.profile}。可选值：{', '.join(PROFILES)}"
+            f"Unknown profile: {request.profile}. Choose one of: {', '.join(PROFILES)}"
         )
     parent = request.parent.expanduser().resolve()
     directory_name = safe_directory_name(request.directory_name or name)
     target = parent / directory_name
     if target.exists():
-        raise FactoryError(f"目标已存在，为避免覆盖已拒绝创建：{target}")
+        raise FactoryError(f"Refusing to create over an existing target: {target}")
     return target, name
 
 
@@ -228,7 +232,7 @@ def render_template(text: str, project_name: str, profile: str) -> str:
     )
     if unknown:
         raise FactoryError(
-            "模板包含未解析变量：" + ", ".join(unknown)
+            "The template has unresolved variables: " + ", ".join(unknown)
         )
     rendered = token_pattern.sub(
         lambda match: replacements[match.group(0)],
@@ -256,7 +260,7 @@ def atomic_write_text(path: Path, text: str) -> None:
 
 def copy_templates(staging: Path, project_name: str, profile: str) -> list[str]:
     if not TEMPLATE_ROOT.is_dir():
-        raise FactoryError(f"模板目录不存在：{TEMPLATE_ROOT}")
+        raise FactoryError(f"Template folder does not exist: {TEMPLATE_ROOT}")
     created: list[str] = []
     sources = (
         path
@@ -303,7 +307,7 @@ def run_command(
 def project_runtime(project: Path) -> Path:
     runtime = project.expanduser().resolve() / ".ai" / "project_runtime.py"
     if not runtime.is_file():
-        raise FactoryError(f"这不是有效的 Factory 项目：缺少 {runtime}")
+        raise FactoryError(f"Not a valid Factory project: missing {runtime}")
     return runtime
 
 
@@ -321,7 +325,7 @@ def create_project(request: CreateProjectRequest) -> ProjectResult:
     parent.mkdir(parents=True, exist_ok=True)
     staging = parent / f".{target.name}.factory-{uuid.uuid4().hex[:10]}"
     if staging.exists():
-        raise FactoryError(f"临时目录意外存在：{staging}")
+        raise FactoryError(f"Staging folder unexpectedly exists: {staging}")
 
     created_files: list[str] = []
     try:
@@ -331,7 +335,7 @@ def create_project(request: CreateProjectRequest) -> ProjectResult:
         if request.initialize_git:
             result = run_command(["git", "init"], staging)
             if not result.ok:
-                raise FactoryError("Git 初始化失败：\n" + result.stderr.strip())
+                raise FactoryError("Git init failed:\n" + result.stderr.strip())
 
         checkpoint = run_project_command(
             staging,
@@ -339,14 +343,14 @@ def create_project(request: CreateProjectRequest) -> ProjectResult:
         )
         if not checkpoint.ok:
             raise FactoryError(
-                "初始 Handoff 检查点失败：\n"
+                "The initial handoff checkpoint failed:\n"
                 + (checkpoint.stdout + checkpoint.stderr).strip()
             )
 
         doctor = run_project_command(staging, ["doctor", "--shallow"])
         if not doctor.ok:
             raise FactoryError(
-                "初始项目校验失败：\n" + (doctor.stdout + doctor.stderr).strip()
+                "The initial project validation failed:\n" + (doctor.stdout + doctor.stderr).strip()
             )
 
         os.replace(staging, target)
@@ -391,7 +395,7 @@ def export_project(project: Path, output: Path | None = None) -> CommandResult:
 def open_in_file_manager(path: Path) -> None:
     target = path.expanduser().resolve()
     if not target.exists():
-        raise FactoryError(f"路径不存在：{target}")
+        raise FactoryError(f"Path does not exist: {target}")
     if os.name == "nt":
         os.startfile(str(target))  # type: ignore[attr-defined]
     elif sys.platform == "darwin":
@@ -405,7 +409,9 @@ def normalize_initial_context(initial_context: str | None) -> str:
         return ""
     value = initial_context.strip()
     if len(value) > 12_000:
-        raise FactoryError("初始想法过长，请控制在 12000 个字符以内。")
+        raise FactoryError(
+            "The initial idea is too long; keep it under 12000 characters."
+        )
     return value
 
 
@@ -416,31 +422,40 @@ def build_agent_prompt(
 ) -> str:
     root = project.expanduser().resolve()
     if kind not in AGENT_PROMPTS:
-        raise FactoryError(f"未知 Agent 提示类型：{kind}")
+        raise FactoryError(f"Unknown agent prompt kind: {kind}")
     project_runtime(root)
     if not (root / "AI_START_HERE.md").is_file():
-        raise FactoryError(f"这不是有效的 Factory 项目：缺少 {root / 'AI_START_HERE.md'}")
+        raise FactoryError(
+            f"Not a valid Factory project: missing {root / 'AI_START_HERE.md'}"
+        )
     context = normalize_initial_context(initial_context)
-    prompt = f"本地项目目录（当前 Agent 可访问）：{root}\n\n"
+    prompt = f"Local project folder (readable by this agent): {root}\n\n"
     if kind == "start":
         if context:
             prompt += (
-                "用户创建项目时提供的初始想法如下。它是本次启动访谈的主题，"
-                "不是已经批准的 Contract，也不能替代事实核验：\n\n"
+                "The user supplied this initial idea when creating the "
+                "project. It is the subject of the opening interview, not an "
+                "approved contract, and it does not replace checking the "
+                "facts:\n\n"
                 f"{context}\n\n"
             )
         prompt += (
             f"{AGENT_PROMPTS[kind]}\n\n"
-            "这是 AI Project Factory 发送的真实项目输入，不得忽略后再泛化"
-            "询问“你想做什么”。如果上一条回复是 Factory 启动确认，用户"
-            "回复“继续”就表示现在正式处理本输入。\n\n"
-            "若核验后处于 Discussion，先用简洁、具体的语言复述你对用户真实"
-            "意图的理解，再说明已确认事实与关键未知，最后最多提出 3 个最优先"
-            "问题，并允许 pushback。若处于 Goal，则简要核验并继续已经批准的"
-            " Goal，不要重新做启动访谈。不要把缺少可选的全局记忆文件或平台"
-            "适配文件当成主要启动结果；只有它确实阻塞当前项目时才需要告诉"
-            "用户。若用户明确要求 Token Bridge、连接器或登录动作，现在由可见"
-            "的正常 Codex 宿主执行，并按界面处理必要审批。"
+            "This is real project input sent by AI Project Factory. Do not "
+            'skip past it and ask a generic "what would you like to build". '
+            'If the previous reply was a Factory start card, the user saying '
+            '"continue" means to handle this input now.\n\n'
+            "If the project turns out to be in Discussion, first restate -- "
+            "concretely and briefly -- what you understand the user actually "
+            "wants, then what is confirmed and what is genuinely unknown, "
+            "then at most three highest-priority questions, and allow "
+            "pushback. If it is in Goal, verify briefly and continue the "
+            "approved goal rather than re-running the interview. A missing "
+            "optional global memory file or platform adapter is not a "
+            "headline result; mention it only if it actually blocks this "
+            "project. If the user explicitly asks for a connector, a sign-in, "
+            "or another host capability, do it now in this visible session "
+            "and handle any approvals through the normal interface."
         )
     else:
         prompt += AGENT_PROMPTS[kind]
@@ -486,14 +501,14 @@ def open_codex_deep_link(deep_link: str) -> None:
     if os.name == "nt":
         if not codex_protocol_registered():
             raise FactoryError(
-                "没有检测到 Codex 桌面版的 codex:// 启动入口。"
-                "请先安装或重新打开 Codex 桌面版，再重试。"
+                "No codex:// handler for Codex Desktop was found. "
+                "Install or reopen Codex Desktop, then try again."
             )
         try:
             os.startfile(deep_link)  # type: ignore[attr-defined]
         except OSError as exc:
             raise FactoryError(
-                "Windows 未能调用 Codex 桌面版。请确认 Codex 已安装并可正常打开。"
+                "Windows could not invoke Codex Desktop. Check that Codex is installed and opens normally."
             ) from exc
     elif sys.platform == "darwin":
         subprocess.Popen(["open", deep_link])
@@ -534,7 +549,7 @@ class CodexAppServerClient:
             )
         except OSError as exc:
             raise FactoryError(
-                "无法启动 Codex App Server。请确认 Codex CLI 随桌面版正常安装。"
+                "Could not start the Codex App Server. Check that the Codex CLI was installed alongside the desktop app."
             ) from exc
         if (
             self.process.stdin is None
@@ -542,7 +557,7 @@ class CodexAppServerClient:
             or self.process.stderr is None
         ):
             self.close()
-            raise FactoryError("Codex App Server 的标准输入输出不可用。")
+            raise FactoryError("The Codex App Server's stdio is unavailable.")
         self._messages: queue.Queue[object] = queue.Queue()
         self._backlog: list[dict[str, object]] = []
         self._stderr: list[str] = []
@@ -587,7 +602,7 @@ class CodexAppServerClient:
                 self.process.stdin.write(payload + "\n")
                 self.process.stdin.flush()
             except (BrokenPipeError, OSError) as exc:
-                raise FactoryError(self.failure_detail("Codex App Server 已断开。")) from exc
+                raise FactoryError(self.failure_detail("The Codex App Server disconnected.")) from exc
 
     def notify(self, method: str, params: dict[str, object]) -> None:
         self._send({"method": method, "params": params})
@@ -599,11 +614,11 @@ class CodexAppServerClient:
             item = self._messages.get(timeout=timeout)
         except queue.Empty as exc:
             raise FactoryError(
-                self.failure_detail("等待 Codex App Server 响应超时。")
+                self.failure_detail("Timed out waiting for the Codex App Server.")
             ) from exc
         if item is self._EOF:
             raise FactoryError(
-                self.failure_detail("Codex App Server 在完成请求前退出。")
+                self.failure_detail("The Codex App Server exited before finishing the request.")
             )
         return item  # type: ignore[return-value]
 
@@ -617,8 +632,8 @@ class CodexAppServerClient:
                 "error": {
                     "code": -32002,
                     "message": (
-                        "AI Project Factory 不处理交互式宿主请求；"
-                        "请在 Codex 任务中用普通回复继续。"
+                        "AI Project Factory does not answer interactive host requests; "
+                        "continue with an ordinary reply in the Codex task."
                     ),
                 },
             }
@@ -639,7 +654,7 @@ class CodexAppServerClient:
                 remaining = deadline - time.monotonic()
                 if remaining <= 0:
                     raise FactoryError(
-                        self.failure_detail(f"Codex 请求 {method} 超时。")
+                        self.failure_detail(f"Codex request {method} timed out.")
                     )
                 message = self._next_message(remaining)
                 if (
@@ -659,10 +674,10 @@ class CodexAppServerClient:
                         detail = str(error.get("message") or error)
                     else:
                         detail = str(error)
-                    raise FactoryError(f"Codex 请求 {method} 失败：{detail}")
+                    raise FactoryError(f"Codex request {method} failed: {detail}")
                 result = message.get("result")
                 if not isinstance(result, dict):
-                    raise FactoryError(f"Codex 请求 {method} 返回了无效结果。")
+                    raise FactoryError(f"Codex request {method} returned an invalid result.")
                 return result
         finally:
             if deferred:
@@ -792,13 +807,13 @@ def find_codex_executable() -> str:
         if candidate.is_file():
             return str(candidate)
     raise FactoryError(
-        "没有找到 Codex CLI。请先安装或更新 Codex 桌面版，再重试。"
+        "No Codex CLI found. Install or update Codex Desktop, then try again."
     )
 
 
 def _thread_deep_link(thread_id: str) -> str:
     if not re.fullmatch(r"[A-Za-z0-9_-]+", thread_id):
-        raise FactoryError("Codex 返回了无效的任务 ID。")
+        raise FactoryError("Codex returned an invalid task ID.")
     return f"codex://threads/{thread_id}"
 
 
@@ -809,7 +824,7 @@ def build_codex_quick_start_card(
     """Return an honest deterministic assistant item for an instant handoff."""
 
     root = project.expanduser().resolve()
-    state_label = "尚未核验"
+    state_label = "not yet verified"
     state_path = root / "AI_PROJECT.json"
     try:
         state = json.loads(state_path.read_text(encoding="utf-8"))
@@ -821,20 +836,21 @@ def build_codex_quick_start_card(
         if isinstance(mode, str) and isinstance(goal, str):
             state_label = f"{mode} / {goal}"
     action = (
-        "开始启动访谈"
+        "start the opening interview"
         if prompt_kind == "start"
-        else "按上一条接管提示继续"
+        else "continue from the takeover prompt above"
     )
     return (
-        "AI Project Factory 启动确认"
-        "（这不是项目研究结论）\n\n"
-        f"- 项目：{root.name}\n"
-        f"- 本地状态：{state_label}\n"
-        "- 你的完整项目输入已显示在本轮用户消息中。\n"
-        "- 本轮只确认交接，没有读取项目文件或调用工具、Token Bridge、"
-        "连接器。\n\n"
-        "请在下方回复“继续”或直接补充要求。随后 Codex 会在这个可见任务中"
-        f"{action}；如果需要审批或登录，也会由当前 Codex 界面正常处理。"
+        "AI Project Factory start card "
+        "(this is an acknowledgement, not research)\n\n"
+        f"- Project: {root.name}\n"
+        f"- Local state: {state_label}\n"
+        "- Your full project input is in this turn's user message.\n"
+        "- This turn only confirms the handoff. No project files were read "
+        "and no tools were called.\n\n"
+        'Reply "continue" below, or add requirements directly. Codex will '
+        f"then {action} in this same visible task, handling any approvals or "
+        "sign-ins through the normal interface."
     )
 
 
@@ -845,18 +861,19 @@ def build_codex_bootstrap_turn_prompt(
     """Wrap the real task in a visible, bounded bootstrap turn."""
 
     return (
-        "【AI Project Factory 可见启动交接】\n\n"
-        "这是一个真实的 Codex 用户轮次。下面的“项目任务输入”必须保留在"
-        "聊天记录中，供用户下一轮继续处理；但当前这一轮只负责确认任务已"
-        "就绪。\n\n"
-        "本轮不要读取任何文件，不要调用 shell、Token Bridge、连接器、网页"
-        "或其他工具，也不要分析或回答项目任务。请仅原样回复"
-        " <STARTUP_CARD> 中的文字，不要添加前言、解释或结论。这个限制只"
-        "适用于当前启动确认轮；用户下一条回复“继续”或补充要求时，再正式"
-        "执行 <PROJECT_TASK>。\n\n"
+        "[AI Project Factory visible handoff]\n\n"
+        "This is a real Codex user turn. The PROJECT_TASK below must stay in "
+        "the transcript so the user can act on it next turn, but this turn "
+        "only confirms that the task is ready.\n\n"
+        "For this turn: read no files, call no shell, connector, web, or "
+        "other tool, and do not analyse or answer the project task. Reply "
+        "with the text inside <STARTUP_CARD> verbatim -- no preamble, no "
+        "explanation, no conclusion. The restriction applies only to this "
+        'confirmation turn; once the user replies "continue" or adds '
+        "requirements, carry out <PROJECT_TASK> properly.\n\n"
         f"<STARTUP_CARD>\n{startup_card}\n</STARTUP_CARD>\n\n"
         f"<PROJECT_TASK>\n{project_prompt}\n</PROJECT_TASK>\n\n"
-        "再次确认：当前只输出 STARTUP_CARD，不执行 PROJECT_TASK。"
+        "To confirm: output STARTUP_CARD only; do not execute PROJECT_TASK."
     )
 
 
@@ -917,7 +934,7 @@ def launch_codex_task(
         )
         thread = started.get("thread")
         if not isinstance(thread, dict) or not isinstance(thread.get("id"), str):
-            raise FactoryError("Codex 没有返回有效的任务 ID。")
+            raise FactoryError("Codex did not return a valid task ID.")
         thread_id = str(thread["id"])
         deep_link = _thread_deep_link(thread_id)
         setup_detail = ""
@@ -929,12 +946,12 @@ def launch_codex_task(
                         "thread/name/set",
                         {
                             "threadId": thread_id,
-                            "name": f"{root.name} · 启动讨论",
+                            "name": f"{root.name} · opening discussion",
                         },
                     )
                 except FactoryError as exc:
                     setup_detail = (
-                        "任务已创建，但当前 Codex 未接受自定义标题："
+                        "Task created, but this Codex build did not accept a custom title: "
                         f"{exc}"
                     )
             turn_started = client.request(
@@ -959,7 +976,7 @@ def launch_codex_task(
             if not isinstance(turn, dict) or not isinstance(
                 turn.get("id"), str
             ):
-                raise FactoryError("Codex 没有返回有效的启动轮次 ID。")
+                raise FactoryError("Codex did not return a valid bootstrap turn ID.")
             turn_id = str(turn["id"])
             open_detail = setup_detail
             if on_started:
@@ -989,13 +1006,13 @@ def launch_codex_task(
                 except FactoryError:
                     pass
                 raise FactoryError(
-                    "Codex 可见启动确认超过 "
-                    f"{turn_timeout:g} 秒，已停止并退回安全草稿。"
+                    "The visible Codex start card took longer than "
+                    f"{turn_timeout:g}s; stopped and fell back to a safe draft."
                 )
             if turn_status != "completed":
                 raise FactoryError(
-                    "Codex 可见启动确认没有正常完成："
-                    f"{turn_status}。"
+                    "The visible Codex start card did not complete: "
+                    f"{turn_status}."
                 )
         except Exception:
             if not ephemeral:
@@ -1008,8 +1025,8 @@ def launch_codex_task(
                     )
                 except Exception as cleanup_exc:
                     raise FactoryError(
-                        "Codex 任务初始化失败，且自动清理未完成。"
-                        f"请在 Codex 中检查任务 {thread_id}。\n{cleanup_exc}"
+                        "Codex task initialisation failed and the automatic cleanup did not finish. "
+                        f"Check task {thread_id} in Codex.\n{cleanup_exc}"
                     ) from cleanup_exc
             raise
 
@@ -1151,7 +1168,7 @@ def skill_root_sort_key(path: Path) -> tuple[str, str]:
 
 def tree_hash(root: Path) -> str:
     if path_is_link_or_junction(root) or not root.is_dir():
-        raise FactoryError(f"无法哈希非普通目录：{root}")
+        raise FactoryError(f"Cannot hash a non-regular directory: {root}")
     digest = hashlib.sha256()
 
     def add_field(data: bytes) -> None:
@@ -1165,7 +1182,7 @@ def tree_hash(root: Path) -> str:
             relative = path.relative_to(root).as_posix()
             if path_is_link_or_junction(path):
                 raise FactoryError(
-                    f"Factory 管理的 Skill 树不能包含链接或 reparse point：{path}"
+                    f"A Factory-managed skill tree cannot contain links or reparse points: {path}"
                 )
             if entry.is_dir(follow_symlinks=False):
                 add_field(b"D")
@@ -1181,7 +1198,7 @@ def tree_hash(root: Path) -> str:
                 add_field(path.read_bytes())
             else:
                 raise FactoryError(
-                    f"Factory 管理的 Skill 树包含不支持的文件类型：{path}"
+                    f"A Factory-managed skill tree contains an unsupported file type: {path}"
                 )
 
     visit(root)
@@ -1239,12 +1256,12 @@ def expected_agent_skill_hash(
 def require_managed_skill_directory(destination: Path) -> dict[str, object]:
     marker_path = destination / ".factory-managed.json"
     if path_is_link_or_junction(destination) or not destination.is_dir():
-        raise FactoryError(f"目标 Skill 不是普通目录，拒绝覆盖：{destination}")
+        raise FactoryError(f"Target skill is not a regular directory; refusing to overwrite: {destination}")
     try:
         marker = json.loads(marker_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise FactoryError(
-            f"目标 Skill 缺少有效的 Factory 管理标记，拒绝覆盖：{destination}"
+            f"Target skill has no valid Factory-managed marker; refusing to overwrite: {destination}"
         ) from exc
     if (
         not isinstance(marker, dict)
@@ -1254,14 +1271,14 @@ def require_managed_skill_directory(destination: Path) -> dict[str, object]:
         or not isinstance(marker.get("factory_root"), str)
     ):
         raise FactoryError(
-            f"目标 Skill 的 Factory 管理标记无效，拒绝覆盖：{destination}"
+            f"Target skill's Factory-managed marker is invalid; refusing to overwrite: {destination}"
         )
     return marker
 
 
 def validate_skill_root_location(destination_root: Path) -> Path:
     if not SHARED_SKILL_SOURCE.is_dir():
-        raise FactoryError(f"共享 Skill 源不存在：{SHARED_SKILL_SOURCE}")
+        raise FactoryError(f"Shared skill source does not exist: {SHARED_SKILL_SOURCE}")
     destination_root = destination_root.expanduser().resolve()
     source_root = SHARED_SKILL_SOURCE.resolve()
     if (
@@ -1270,7 +1287,7 @@ def validate_skill_root_location(destination_root: Path) -> Path:
         or source_root in destination_root.parents
     ):
         raise FactoryError(
-            "Skill 目标目录不能与 Factory 的规范 Skill 源互相包含："
+            "A skill target cannot contain, or be contained by, Factory's canonical skill source: "
             f"{destination_root}"
         )
     return destination_root
@@ -1287,14 +1304,14 @@ def validate_skill_destination(destination_root: Path) -> tuple[Path, Path]:
     if backups and not destination.exists():
         if len(backups) != 1:
             raise FactoryError(
-                "发现多个中断的 Skill 备份，拒绝猜测恢复目标："
+                "Found several interrupted skill backups; refusing to guess which to restore: "
                 + ", ".join(str(path) for path in backups)
             )
         require_managed_skill_directory(backups[0])
         os.replace(backups[0], destination)
     elif backups:
         raise FactoryError(
-            "发现残留的 Skill 备份；当前目标仍存在，需先人工确认："
+            "Found a leftover skill backup while the target still exists; resolve it by hand first: "
             + ", ".join(str(path) for path in backups)
         )
 
@@ -1320,8 +1337,8 @@ def sync_agent_skill(
             journal_path = lock_root / MULTI_SYNC_JOURNAL
             if path_entry_exists(journal_path):
                 raise FactoryError(
-                    "检测到未完成的多目标 Skill 同步；请用原来的全部目标重试，"
-                    "不要以单目标同步覆盖恢复现场。"
+                    "An unfinished multi-target skill sync was detected. Retry with all of the original targets; "
+                    "do not overwrite the recovery state with a single-target sync."
                 )
             return sync_agent_skill(
                 lock_root,
@@ -1382,18 +1399,18 @@ def skill_sync_locks(
                 )
             except OSError as exc:
                 raise FactoryError(
-                    f"无法验证 Skill 目标目录身份：{root}"
+                    f"Cannot verify the identity of skill target: {root}"
                 ) from exc
             if aliases_existing:
                 raise FactoryError(
-                    "多个 Skill 目标实际指向同一个目录："
+                    "Several skill targets resolve to the same directory: "
                     f"{root}"
                 )
             lock_path = root / MULTI_SYNC_LOCK
             if path_is_link_or_junction(lock_path) or (
                 lock_path.exists() and not lock_path.is_file()
             ):
-                raise FactoryError(f"Skill 同步锁不是普通文件：{lock_path}")
+                raise FactoryError(f"The skill sync lock is not a regular file: {lock_path}")
             handle = lock_path.open("a+b")
             if lock_path.stat().st_size == 0:
                 handle.write(b"\0")
@@ -1419,7 +1436,7 @@ def skill_sync_locks(
                     except (OSError, BlockingIOError):
                         if time.monotonic() >= deadline:
                             raise FactoryError(
-                                "另一个 Codex/Claude Skill 同步仍在运行。"
+                                "Another Codex/Claude skill sync is still running."
                             )
                         time.sleep(0.05)
             except BaseException:
@@ -1463,33 +1480,33 @@ def validate_multi_sync_journal(
     roots: tuple[Path, ...],
 ) -> None:
     if journal.get("schema_version") != MULTI_SYNC_SCHEMA:
-        raise FactoryError("Skill 同步恢复日志版本无效。")
+        raise FactoryError("The skill sync recovery log has an invalid version.")
     transaction_id = str(journal.get("transaction_id", ""))
     if not re.fullmatch(r"[0-9a-f]{10}", transaction_id):
-        raise FactoryError("Skill 同步恢复日志 transaction_id 无效。")
+        raise FactoryError("The skill sync recovery log has an invalid transaction_id.")
     if journal.get("phase") not in {
         "preparing",
         "prepared",
         "committed",
         "rolled_back",
     }:
-        raise FactoryError("Skill 同步恢复日志 phase 无效。")
+        raise FactoryError("The skill sync recovery log has an invalid phase.")
     expected_hash = str(journal.get("expected_hash", ""))
     if not re.fullmatch(r"[0-9a-f]{64}", expected_hash):
-        raise FactoryError("Skill 同步恢复日志 expected_hash 无效。")
+        raise FactoryError("The skill sync recovery log has an invalid expected_hash.")
     targets = journal.get("targets")
     if not isinstance(targets, list) or len(targets) != len(roots):
-        raise FactoryError("Skill 同步恢复日志目标列表无效。")
+        raise FactoryError("The skill sync recovery log has an invalid target list.")
 
     expected_roots = {lexical_absolute(root) for root in roots}
     recorded_roots: set[Path] = set()
     for raw_target in targets:
         if not isinstance(raw_target, dict):
-            raise FactoryError("Skill 同步恢复日志包含无效目标。")
+            raise FactoryError("The skill sync recovery log contains an invalid target.")
         root = lexical_absolute(Path(str(raw_target.get("root", ""))))
         if root not in expected_roots or root in recorded_roots:
             raise FactoryError(
-                "恢复日志目标与本次同步目录不一致；请用原来的两组目录重试。"
+                "The recovery log's targets do not match this sync; retry with the original pair of folders."
             )
         recorded_roots.add(root)
         expected_paths = {
@@ -1504,21 +1521,21 @@ def validate_multi_sync_journal(
             recorded = lexical_absolute(Path(str(raw_target.get(key, ""))))
             if recorded != lexical_absolute(expected):
                 raise FactoryError(
-                    f"Skill 同步恢复日志包含不安全的 {key} 路径。"
+                    f"The skill sync recovery log contains an unsafe {key} path."
                 )
         original_present = raw_target.get("original_present")
         if not isinstance(original_present, bool):
-            raise FactoryError("Skill 同步恢复日志 original_present 无效。")
+            raise FactoryError("The skill sync recovery log has an invalid original_present.")
         original_hash = raw_target.get("original_hash")
         if original_present:
             if not isinstance(original_hash, str) or not re.fullmatch(
                 r"[0-9a-f]{64}", original_hash
             ):
-                raise FactoryError("Skill 同步恢复日志 original_hash 无效。")
+                raise FactoryError("The skill sync recovery log has an invalid original_hash.")
         elif original_hash is not None:
-            raise FactoryError("原本不存在的 Skill 不应带 original_hash。")
+            raise FactoryError("A skill that did not exist should not carry an original_hash.")
     if recorded_roots != expected_roots:
-        raise FactoryError("Skill 同步恢复日志缺少目标目录。")
+        raise FactoryError("The skill sync recovery log has no target folder.")
 
 
 def load_multi_sync_journal(
@@ -1533,13 +1550,13 @@ def load_multi_sync_journal(
         if not path.exists():
             continue
         if path.is_symlink() or not path.is_file():
-            raise FactoryError(f"Skill 同步恢复日志不是普通文件：{path}")
+            raise FactoryError(f"The skill sync recovery log is not a regular file: {path}")
         try:
             record = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
-            raise FactoryError(f"Skill 同步恢复日志无法读取：{path}") from exc
+            raise FactoryError(f"The skill sync recovery log could not be read: {path}") from exc
         if not isinstance(record, dict):
-            raise FactoryError(f"Skill 同步恢复日志不是 JSON object：{path}")
+            raise FactoryError(f"The skill sync recovery log is not a JSON object: {path}")
         records.append(record)
     if not records:
         return None
@@ -1547,7 +1564,7 @@ def load_multi_sync_journal(
         str(record.get("transaction_id", "")) for record in records
     }
     if len(transaction_ids) != 1:
-        raise FactoryError("多个 Skill 目录包含互相冲突的恢复日志。")
+        raise FactoryError("Several skill folders hold conflicting recovery logs.")
     revisions: list[int] = []
     for record in records:
         raw_revision = record.get("revision")
@@ -1556,7 +1573,7 @@ def load_multi_sync_journal(
             or not isinstance(raw_revision, int)
             or raw_revision < 1
         ):
-            raise FactoryError("Skill 同步恢复日志 revision 无效。")
+            raise FactoryError("The skill sync recovery log has an invalid revision.")
         revisions.append(raw_revision)
     highest_revision = max(revisions)
     newest = [
@@ -1569,7 +1586,7 @@ def load_multi_sync_journal(
         json.dumps(record, ensure_ascii=False, sort_keys=True) != canonical
         for record in newest[1:]
     ):
-        raise FactoryError("同一 revision 的 Skill 恢复日志内容不一致。")
+        raise FactoryError("Skill recovery logs at the same revision disagree.")
     validate_multi_sync_journal(newest[0], roots)
     return newest[0]
 
@@ -1583,7 +1600,7 @@ def transaction_target_path(
 
 def managed_skill_hash(path: Path, label: str) -> str:
     if path_is_link_or_junction(path) or not path.is_dir():
-        raise FactoryError(f"{label} 不是普通的 Factory Skill 目录：{path}")
+        raise FactoryError(f"{label} is not a regular Factory skill folder: {path}")
     require_managed_skill_directory(path)
     return tree_hash(path)
 
@@ -1598,7 +1615,7 @@ def optional_transaction_skill_hash(path: Path) -> str | None:
     """Treat a partial transaction-owned tree as unavailable, not authoritative."""
 
     try:
-        return optional_managed_skill_hash(path, "事务临时 Skill")
+        return optional_managed_skill_hash(path, "transaction staging skill")
     except FactoryError:
         return None
 
@@ -1622,7 +1639,7 @@ def remove_owned_tree_without_following_links(path: Path) -> None:
         remove_link_or_reparse_entry(path)
         return
     if not path.is_dir():
-        raise FactoryError(f"事务临时路径不是目录：{path}")
+        raise FactoryError(f"The transaction staging path is not a directory: {path}")
     for entry in os.scandir(path):
         child = path / entry.name
         if path_is_link_or_junction(child):
@@ -1638,7 +1655,7 @@ def remove_transaction_path(path: Path, root: Path) -> None:
     path = lexical_absolute(path)
     root = lexical_absolute(root)
     if lexical_absolute(path.parent) != root:
-        raise FactoryError(f"拒绝清理 Skill 根目录之外的路径：{path}")
+        raise FactoryError(f"Refusing to clean a path outside the skill root: {path}")
     if not path_entry_exists(path):
         return
     remove_owned_tree_without_following_links(path)
@@ -1648,7 +1665,7 @@ def remove_multi_sync_journals(roots: tuple[Path, ...]) -> None:
     for root in roots:
         path = root / MULTI_SYNC_JOURNAL
         if path.is_symlink():
-            raise FactoryError(f"拒绝删除符号链接恢复日志：{path}")
+            raise FactoryError(f"Refusing to delete a symlinked recovery log: {path}")
         path.unlink(missing_ok=True)
 
 
@@ -1683,7 +1700,7 @@ def recover_multi_skill_sync(roots: tuple[Path, ...]) -> bool:
         )
         try:
             destination_hash = optional_managed_skill_hash(
-                destination, "当前 Skill"
+                destination, "current skill"
             )
             if phase != "prepared":
                 snapshot_hash = None
@@ -1701,14 +1718,14 @@ def recover_multi_skill_sync(roots: tuple[Path, ...]) -> bool:
             expected_destination = original_hash if original_present else None
             if destination_hash != expected_destination:
                 conflicts.append(
-                    f"{destination}: preparing 阶段的原目标已被改变。"
+                    f"{destination}: the original target changed during the preparing phase."
                 )
             if any(
                 path_entry_exists(path)
                 for path in (staging, backup, recovery)
             ):
                 conflicts.append(
-                    f"{destination}: preparing 阶段出现了不应存在的交换目录。"
+                    f"{destination}: a swap folder appeared during the preparing phase that should not exist."
                 )
         elif phase == "prepared":
             if original_present:
@@ -1718,11 +1735,11 @@ def recover_multi_skill_sync(roots: tuple[Path, ...]) -> bool:
                 ):
                     if value not in {None, original_hash}:
                         conflicts.append(
-                            f"{destination}: {label} 不再是事务已知版本。"
+                            f"{destination}: {label} is no longer the version this transaction recorded."
                         )
                 if recovery_hash not in {None, expected_hash}:
                     conflicts.append(
-                        f"{destination}: recovery 不再是事务已知版本。"
+                        f"{destination}: recovery is no longer the version this transaction recorded."
                     )
                 if original_hash not in {
                     destination_hash,
@@ -1730,35 +1747,35 @@ def recover_multi_skill_sync(roots: tuple[Path, ...]) -> bool:
                     backup_hash,
                 }:
                     conflicts.append(
-                        f"{destination}: 找不到可验证的原始 Skill 快照。"
+                        f"{destination}: no verifiable snapshot of the original skill was found."
                     )
                 if destination_hash not in {None, original_hash, expected_hash}:
                     conflicts.append(
-                        f"{destination}: 当前 Skill 在崩溃后被人工修改。"
+                        f"{destination}: the current skill was edited by hand after the crash."
                     )
             else:
                 if snapshot_hash is not None or backup_hash is not None:
                     conflicts.append(
-                        f"{destination}: 原本不存在却出现了原始快照。"
+                        f"{destination}: a snapshot of an original that never existed showed up."
                     )
                 if destination_hash not in {None, expected_hash}:
                     conflicts.append(
-                        f"{destination}: 新目标在崩溃后被人工修改。"
+                        f"{destination}: the new target was edited by hand after the crash."
                     )
                 if recovery_hash not in {None, expected_hash}:
                     conflicts.append(
-                        f"{destination}: recovery 不再是事务已知版本。"
+                        f"{destination}: recovery is no longer the version this transaction recorded."
                     )
         elif phase == "committed":
             if destination_hash != expected_hash:
                 conflicts.append(
-                    f"{destination}: committed 事务的新版本缺失或被修改。"
+                    f"{destination}: the committed transaction's new version is missing or altered."
                 )
         else:
             expected_destination = original_hash if original_present else None
             if destination_hash != expected_destination:
                 conflicts.append(
-                    f"{destination}: rolled_back 事务的原目标缺失或被修改。"
+                    f"{destination}: the rolled-back transaction's original target is missing or altered."
                 )
 
         states.append(
@@ -1780,7 +1797,7 @@ def recover_multi_skill_sync(roots: tuple[Path, ...]) -> bool:
 
     if conflicts:
         raise FactoryError(
-            "Skill 同步恢复停止：检测到事务之外的修改，未覆盖任何文件。\n- "
+            "Skill sync recovery stopped: changes outside the transaction were found, and nothing was overwritten.\n- "
             + "\n- ".join(conflicts)
         )
 
@@ -1829,18 +1846,18 @@ def recover_multi_skill_sync(roots: tuple[Path, ...]) -> bool:
             try:
                 actual = optional_managed_skill_hash(
                     destination,
-                    "回滚后的 Skill",
+                    "rolled-back skill",
                 )
             except FactoryError as exc:
                 final_conflicts.append(str(exc))
                 continue
             if actual != expected_destination:
                 final_conflicts.append(
-                    f"{destination}: 未恢复到事务开始前的版本。"
+                    f"{destination}: did not return to the version from before the transaction."
                 )
         if final_conflicts:
             raise FactoryError(
-                "Skill 同步回滚尚未完成，恢复日志已保留。\n- "
+                "The skill sync rollback did not finish; the recovery log has been kept.\n- "
                 + "\n- ".join(final_conflicts)
             )
         write_multi_sync_journal(roots, journal, "rolled_back")
@@ -1882,12 +1899,12 @@ def sync_agent_skills(
         seen.add(root)
         roots.append(root)
     if not roots:
-        raise FactoryError("至少指定一个 Skill 目标目录。")
+        raise FactoryError("Give at least one skill target folder.")
     for index, root in enumerate(roots):
         for other in roots[index + 1 :]:
             if root in other.parents or other in root.parents:
                 raise FactoryError(
-                    "Skill 目标目录不能互相嵌套："
+                    "Skill target folders cannot nest inside one another: "
                     f"{root} ; {other}"
                 )
     ordered_roots = tuple(sorted(roots, key=skill_root_sort_key))
@@ -1972,7 +1989,7 @@ def sync_agent_skills(
                 )
                 if tree_hash(destination) != expected_hash:
                     raise FactoryError(
-                        f"同步后的 Skill 与预期内容不一致：{destination}"
+                        f"The synced skill does not match the expected content: {destination}"
                     )
                 installed.append(destination)
             write_multi_sync_journal(

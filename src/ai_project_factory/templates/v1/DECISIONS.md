@@ -1,12 +1,13 @@
 # Decision Log
 
-本文件只记录会影响后续工作的持久决策。保持追加式记录；如果决策被替代，
-保留原条目并把状态改为 `superseded`，同时链接新决策。
+This file records only the decisions that constrain later work. Keep it
+append-only: when a decision is replaced, leave the original entry in place,
+change its status to `superseded`, and link to the one that replaced it.
 
 ## Entry format
 
 ```markdown
-## D-YYYYMMDD-HHMMSS-xxxx — 简短标题
+## D-YYYYMMDD-HHMMSS-xxxx — short title
 
 - Status: accepted | proposed | superseded | rejected
 - Date: YYYY-MM-DD
@@ -15,27 +16,27 @@
 
 ### Context
 
-当时需要解决的问题和约束。
+The problem and the constraints at the time.
 
 ### Decision
 
-最终采用的方案。
+What was actually chosen.
 
 ### Alternatives considered
 
-考虑过但没有采用的主要方案，以及未采用原因。
+The main options that were not taken, and why.
 
 ### Consequences
 
-该决定带来的收益、代价和后续约束。
+What this buys, what it costs, and what it constrains later.
 
 ### Evidence
 
-支持该决定的文件、数据、命令、测试或用户确认。
+The files, data, commands, tests, or user confirmation behind it.
 ```
 
 ---
 
 # Decisions
 
-尚无已记录决策。
+No decisions recorded yet.

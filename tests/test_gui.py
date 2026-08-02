@@ -34,7 +34,7 @@ class GuiRegressionTests(unittest.TestCase):
                 def fail() -> object:
                     raise FactoryError("injected GUI failure")
 
-                app._background("测试中", fail, lambda _result: None)
+                app._background("testing", fail, lambda _result: None)
                 deadline = time.monotonic() + 5
 
                 def finish_when_delivered() -> None:
@@ -47,7 +47,7 @@ class GuiRegressionTests(unittest.TestCase):
                 app.mainloop()
 
                 self.assertFalse(app._busy)
-                self.assertEqual(app.status_var.get(), "操作失败")
+                self.assertEqual(app.status_var.get(), "Operation failed")
                 self.assertIn(
                     "injected GUI failure",
                     app.output.get("1.0", "end"),
@@ -119,7 +119,7 @@ class GuiRegressionTests(unittest.TestCase):
                     "ai_project_factory.gui.launch_codex_project",
                     return_value=SimpleNamespace(
                         project_path=created,
-                        prompt="启动提示",
+                        prompt="start prompt",
                         deep_link="codex://threads/test",
                         method="app-server",
                         thread_id="test-thread",
@@ -143,10 +143,10 @@ class GuiRegressionTests(unittest.TestCase):
                 launch_codex.call_args.args[:2],
                 (created, "start"),
             )
-            self.assertIn("真实 Codex 任务", app.output.get("1.0", "end"))
-            self.assertIn("Token Bridge", app.output.get("1.0", "end"))
-            self.assertIn("真实首轮用户消息", app.output.get("1.0", "end"))
-            self.assertIn("启动确认", app.output.get("1.0", "end"))
+            body = app.output.get("1.0", "end")
+            self.assertIn("a real Codex task started", body)
+            self.assertIn("real first user", body)
+            self.assertIn("start card", body)
         finally:
             app._closing = True
             app.destroy()
@@ -155,9 +155,9 @@ class GuiRegressionTests(unittest.TestCase):
         app = self.make_app()
         try:
             guidance = app.output.get("1.0", "end")
-            self.assertIn("真实可见的启动确认轮次", guidance)
-            self.assertIn("10–20 秒", guidance)
-            self.assertIn("预填草稿", guidance)
+            self.assertIn("real, visible opening turn", guidance)
+            self.assertIn("10-20", guidance)
+            self.assertIn("start card", guidance)
         finally:
             app._closing = True
             app.destroy()
@@ -168,8 +168,8 @@ class GuiRegressionTests(unittest.TestCase):
             project = Path("C:/AI Projects/Factory Trial")
             app.project_var.set(str(project))
             expected = (
-                f"本地项目目录（当前 Agent 可访问）：{project}\n\n"
-                "请读取 AI_START_HERE.md。"
+                f"Local project folder (readable by this agent): {project}\n\n"
+                "Read AI_START_HERE.md."
             )
             with mock.patch(
                 "ai_project_factory.gui.build_agent_prompt",
@@ -179,7 +179,7 @@ class GuiRegressionTests(unittest.TestCase):
             prompt = app.clipboard_get()
             self.assertIn(str(project), prompt)
             self.assertIn("AI_START_HERE.md", prompt)
-            self.assertIn("当前 Agent 可访问", prompt)
+            self.assertIn("readable by this agent", prompt)
             build_prompt.assert_called_once_with(project, "start")
         finally:
             app._closing = True
@@ -192,7 +192,7 @@ class GuiRegressionTests(unittest.TestCase):
             app.project_var.set(str(project))
             result = SimpleNamespace(
                 project_path=project,
-                prompt="请读取 AI_START_HERE.md。",
+                prompt="Read AI_START_HERE.md.",
                 deep_link="codex://threads/test-thread",
                 method="draft",
                 thread_id=None,
@@ -217,10 +217,10 @@ class GuiRegressionTests(unittest.TestCase):
                 app._launch_codex()
             launch_codex.assert_called_once()
             self.assertEqual(app.clipboard_get(), result.prompt)
-            self.assertIn("预填草稿", app.output.get("1.0", "end"))
+            self.assertIn("prefilled draft", app.output.get("1.0", "end"))
             self.assertEqual(
                 app.status_var.get(),
-                "Codex 草稿已打开，等待手动发送",
+                "Codex draft open, waiting for you to send",
             )
         finally:
             app._closing = True

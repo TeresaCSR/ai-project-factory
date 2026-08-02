@@ -58,7 +58,13 @@ class FakeAppServerProcess:
 
 
 class CodexLaunchTests(unittest.TestCase):
-    def make_project(self, parent: Path, name: str = "中文 Project") -> Path:
+    def make_project(
+        self,
+        parent: Path,
+        # Non-ASCII on purpose: Windows path encoding is a real
+        # regression surface for the deep link and the App Server.
+        name: str = "Ünïcode 项目",
+    ) -> Path:
         project = parent / name
         (project / ".ai").mkdir(parents=True)
         (project / ".ai" / "project_runtime.py").write_text(
@@ -103,17 +109,16 @@ class CodexLaunchTests(unittest.TestCase):
             project = self.make_project(Path(temp))
             prompt = build_agent_prompt(
                 project,
-                initial_context="做一个帮助整理实验数据的工具。",
+                initial_context="A tool that tidies up experiment data.",
             )
-            self.assertIn("启动访谈的主题", prompt)
-            self.assertIn("不是已经批准的 Contract", prompt)
-            self.assertIn("整理实验数据", prompt)
-            self.assertIn("不得忽略后再泛化询问", prompt)
-            self.assertIn("最多提出 3 个", prompt)
-            self.assertIn("可选的全局记忆文件", prompt)
-            self.assertIn("Token Bridge", prompt)
-            self.assertIn("正常 Codex 宿主执行", prompt)
-            self.assertIn("用户回复“继续”", prompt)
+            self.assertIn("subject of the opening interview", prompt)
+            self.assertIn("not an approved contract", prompt)
+            self.assertIn("tidies up experiment data", prompt)
+            self.assertIn("Do not skip past it", prompt)
+            self.assertIn("at most three highest-priority", prompt)
+            self.assertIn("optional global memory file", prompt)
+            self.assertIn("handle any approvals", prompt)
+            self.assertIn('saying "continue"', prompt)
 
     @unittest.skipIf(
         os.name != "nt" and sys.version_info < (3, 12),
@@ -208,7 +213,7 @@ class CodexLaunchTests(unittest.TestCase):
         self,
     ) -> None:
         with tempfile.TemporaryDirectory() as temp:
-            project = self.make_project(Path(temp), "真实启动")
+            project = self.make_project(Path(temp), "Real Start")
             fake = FakeAppServerProcess(
                 [
                     {"id": 1, "result": {"userAgent": "test"}},
@@ -308,7 +313,7 @@ class CodexLaunchTests(unittest.TestCase):
                 bootstrap_text,
             )
             self.assertIn(
-                "AI Project Factory 启动确认",
+                "AI Project Factory start card",
                 bootstrap_text,
             )
             self.assertIn(
@@ -316,7 +321,7 @@ class CodexLaunchTests(unittest.TestCase):
                 bootstrap_text,
             )
             self.assertIn(
-                "当前只输出 STARTUP_CARD",
+                "output STARTUP_CARD only",
                 bootstrap_text,
             )
             self.assertEqual(turn_params["approvalPolicy"], "never")
@@ -325,14 +330,14 @@ class CodexLaunchTests(unittest.TestCase):
             )
             self.assertEqual(
                 sent[3]["params"]["name"],
-                "真实启动 · 启动讨论",
+                "Real Start · opening discussion",
             )
 
     def test_quick_start_card_is_honest_and_requests_visible_continue(
         self,
     ) -> None:
         with tempfile.TemporaryDirectory() as temp:
-            project = self.make_project(Path(temp), "快速项目")
+            project = self.make_project(Path(temp), "Quick Project")
             (project / "AI_PROJECT.json").write_text(
                 json.dumps(
                     {"mode": "discussion", "goal_status": "none"},
@@ -342,10 +347,10 @@ class CodexLaunchTests(unittest.TestCase):
             )
             card = build_codex_quick_start_card(project, "start")
 
-        self.assertIn("不是项目研究结论", card)
+        self.assertIn("not research", card)
         self.assertIn("discussion / none", card)
-        self.assertIn("没有读取项目文件或调用工具", card)
-        self.assertIn("回复“继续”", card)
+        self.assertIn("No project files were read", card)
+        self.assertIn('Reply "continue"', card)
 
     def test_bootstrap_turn_wraps_real_task_without_executing_it(
         self,
@@ -357,8 +362,8 @@ class CodexLaunchTests(unittest.TestCase):
 
         self.assertIn("<PROJECT_TASK>\nREAL PROJECT INPUT", wrapped)
         self.assertIn("<STARTUP_CARD>\nVISIBLE STARTUP CARD", wrapped)
-        self.assertIn("不要读取任何文件", wrapped)
-        self.assertIn("当前只输出 STARTUP_CARD", wrapped)
+        self.assertIn("read no files", wrapped)
+        self.assertIn("output STARTUP_CARD only", wrapped)
 
     def test_minimal_app_server_never_spawns_mcp_listing_process(
         self,
@@ -469,7 +474,7 @@ class CodexLaunchTests(unittest.TestCase):
 
     def test_prompt_rejects_non_factory_directory(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
-            with self.assertRaisesRegex(FactoryError, "有效的 Factory 项目"):
+            with self.assertRaisesRegex(FactoryError, "valid Factory project"):
                 build_agent_prompt(Path(temp))
 
     @mock.patch(

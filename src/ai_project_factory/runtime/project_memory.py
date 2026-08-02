@@ -642,7 +642,7 @@ def verify_artifact_manifest(
             )
             continue
         artifact_id, location, _version, size_text, sha_text, availability, _notes = cells
-        if artifact_id in {"---", "尚无"} or set(artifact_id) == {"-"}:
+        if artifact_id in {"---", "none"} or set(artifact_id) == {"-"}:
             continue
 
         availability = availability.upper()
@@ -985,8 +985,10 @@ def inspect_project(project: Path) -> tuple[list[str], list[str], dict[str, str]
         if "{{" in text and "}}" in text:
             warnings.append(f"{relative} contains an unresolved template token")
 
-    if "待填写" in context:
-        warnings.append("PROJECT_CONTEXT.md still contains fields marked 待填写")
+    # The placeholder the template ships with. Warning on it is the only way a
+    # project that was created and then never filled in gets noticed.
+    if "[TBD]" in context:
+        warnings.append("PROJECT_CONTEXT.md still contains fields marked [TBD]")
 
     artifact_errors, artifact_warnings = verify_artifact_manifest(
         project, loaded.get("ARTIFACTS.md", "")

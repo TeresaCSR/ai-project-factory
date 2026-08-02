@@ -41,10 +41,12 @@ LINE = "#dbe4ea"
 SOFT_BLUE = "#eaf3f7"
 SUCCESS = "#247057"
 ERROR = "#a64040"
+UI_FONT = "Segoe UI"
+MONO_FONT = "Cascadia Mono"
 PROFILE_LABELS = {
-    "通用项目（general）": "general",
-    "软件开发（software）": "software",
-    "科研 / 数据（research）": "research",
+    "General project": "general",
+    "Software development": "software",
+    "Research / data": "research",
 }
 
 
@@ -57,7 +59,7 @@ class FactoryApp(tk.Tk):
         self.minsize(840, 620)
         self.configure(bg=BACKGROUND)
         self.last_project: Path | None = None
-        self.status_var = tk.StringVar(value="就绪")
+        self.status_var = tk.StringVar(value="Ready")
         self._current_page = "create"
         self._project_rows: dict[str, ProjectSummary] = {}
         self._busy = False
@@ -70,7 +72,7 @@ class FactoryApp(tk.Tk):
     def _configure_styles(self) -> None:
         style = ttk.Style(self)
         style.theme_use("clam")
-        style.configure(".", font=("Microsoft YaHei UI", 10))
+        style.configure(".", font=(UI_FONT, 10))
         style.configure("TFrame", background=BACKGROUND)
         style.configure("Surface.TFrame", background=SURFACE)
         style.configure("Page.TFrame", background=BACKGROUND)
@@ -78,7 +80,7 @@ class FactoryApp(tk.Tk):
             "Title.TLabel",
             background=BACKGROUND,
             foreground=NAVY,
-            font=("Microsoft YaHei UI", 21, "bold"),
+            font=(UI_FONT, 21, "bold"),
         )
         style.configure(
             "Subtitle.TLabel", background=BACKGROUND, foreground=MUTED
@@ -87,7 +89,7 @@ class FactoryApp(tk.Tk):
             "CardTitle.TLabel",
             background=SURFACE,
             foreground=NAVY,
-            font=("Microsoft YaHei UI", 12, "bold"),
+            font=(UI_FONT, 12, "bold"),
         )
         style.configure("Card.TLabel", background=SURFACE, foreground=NAVY)
         style.configure(
@@ -95,7 +97,7 @@ class FactoryApp(tk.Tk):
             background=ACCENT,
             foreground="#ffffff",
             padding=(18, 10),
-            font=("Microsoft YaHei UI", 10, "bold"),
+            font=(UI_FONT, 10, "bold"),
         )
         style.map(
             "Primary.TButton",
@@ -107,7 +109,7 @@ class FactoryApp(tk.Tk):
             background=SOFT_BLUE,
             foreground=NAVY,
             padding=(16, 9),
-            font=("Microsoft YaHei UI", 10, "bold"),
+            font=(UI_FONT, 10, "bold"),
         )
         style.map(
             "Secondary.TButton",
@@ -127,7 +129,7 @@ class FactoryApp(tk.Tk):
             "Factory.Treeview.Heading",
             background="#edf2f5",
             foreground=MUTED,
-            font=("Microsoft YaHei UI", 9, "bold"),
+            font=(UI_FONT, 9, "bold"),
             relief="flat",
         )
         style.map(
@@ -140,7 +142,7 @@ class FactoryApp(tk.Tk):
             background=SOFT_BLUE,
             foreground=NAVY,
             padding=(10, 5),
-            font=("Microsoft YaHei UI", 9, "bold"),
+            font=(UI_FONT, 9, "bold"),
         )
 
     def _build(self) -> None:
@@ -171,20 +173,20 @@ class FactoryApp(tk.Tk):
             bg=SIDEBAR,
             fg="#ffffff",
             justify="left",
-            font=("Microsoft YaHei UI", 17, "bold"),
+            font=(UI_FONT, 17, "bold"),
         ).pack(anchor="w", padx=22)
         tk.Label(
             sidebar,
             text=f"Portable workspace · v{FACTORY_VERSION}",
             bg=SIDEBAR,
             fg="#9eb4c4",
-            font=("Microsoft YaHei UI", 8),
+            font=(UI_FONT, 8),
         ).pack(anchor="w", padx=22, pady=(5, 28))
 
         self.nav_buttons: dict[str, tk.Button] = {}
         for key, label, command in (
-            ("create", "＋  新建项目", lambda: self._show_page("create")),
-            ("manage", "▣  项目控制台", lambda: self._show_page("manage")),
+            ("create", "＋  New project", lambda: self._show_page("create")),
+            ("manage", "▣  Project console", lambda: self._show_page("manage")),
         ):
             button = tk.Button(
                 sidebar,
@@ -199,7 +201,7 @@ class FactoryApp(tk.Tk):
                 fg="#cbd8e1",
                 activebackground="#1c425e",
                 activeforeground="#ffffff",
-                font=("Microsoft YaHei UI", 10, "bold"),
+                font=(UI_FONT, 10, "bold"),
                 cursor="hand2",
             )
             button.pack(fill="x", pady=2)
@@ -215,15 +217,17 @@ class FactoryApp(tk.Tk):
             fg="#b9c9d4",
             justify="left",
             wraplength=174,
-            font=("Microsoft YaHei UI", 9),
+            font=(UI_FONT, 9),
         )
         self.status_label.pack(side="bottom", anchor="w", padx=22, pady=(8, 8))
         tk.Label(
             sidebar,
-            text="本地优先 · 普通 Markdown · 可核验",
+            text="Local first · plain Markdown · verifiable",
             bg=SIDEBAR,
             fg="#718b9d",
-            font=("Microsoft YaHei UI", 8),
+            justify="left",
+            wraplength=176,
+            font=(UI_FONT, 8),
         ).pack(side="bottom", anchor="w", padx=22)
 
         content = ttk.Frame(shell, style="Page.TFrame")
@@ -257,18 +261,21 @@ class FactoryApp(tk.Tk):
             row=row, column=1, sticky="ew", padx=(14, 8), pady=8
         )
         if browse:
-            ttk.Button(parent, text="浏览…", command=browse).grid(
+            ttk.Button(parent, text="Browse…", command=browse).grid(
                 row=row, column=2, sticky="ew", pady=8
             )
 
     def _build_create(self, tab: ttk.Frame) -> None:
         tab.columnconfigure(0, weight=1)
-        ttk.Label(tab, text="新建可迁移项目", style="Title.TLabel").grid(
+        ttk.Label(tab, text="New portable project", style="Title.TLabel").grid(
             row=0, column=0, sticky="w"
         )
         ttk.Label(
             tab,
-            text="从一份可核验的本地事实层开始，再让 Codex 和你完成启动访谈。",
+            text=(
+                "Start from a fact layer you can check, then let the agent "
+                "interview you."
+            ),
             style="Subtitle.TLabel",
         ).grid(row=1, column=0, sticky="w", pady=(4, 18))
 
@@ -278,9 +285,9 @@ class FactoryApp(tk.Tk):
             flow.columnconfigure(column, weight=1)
         for index, (number, title, detail) in enumerate(
             (
-                ("01", "创建地基", "生成事实层与本地 Git"),
-                ("02", "讨论定方案", "访谈、研究与 pushback"),
-                ("03", "Goal 执行", "确认后持续做到完成"),
+                ("01", "Lay the ground", "Fact layer plus a local Git repo"),
+                ("02", "Discuss", "Interview, research, push back"),
+                ("03", "Execute", "Run to completion once approved"),
             )
         ):
             card = tk.Frame(
@@ -300,28 +307,28 @@ class FactoryApp(tk.Tk):
                 text=number,
                 bg=SURFACE,
                 fg=ACCENT,
-                font=("Cascadia Mono", 10, "bold"),
+                font=(MONO_FONT, 10, "bold"),
             ).pack(anchor="w", padx=14, pady=(10, 2))
             tk.Label(
                 card,
                 text=title,
                 bg=SURFACE,
                 fg=NAVY,
-                font=("Microsoft YaHei UI", 10, "bold"),
+                font=(UI_FONT, 10, "bold"),
             ).pack(anchor="w", padx=14)
             tk.Label(
                 card,
                 text=detail,
                 bg=SURFACE,
                 fg=MUTED,
-                font=("Microsoft YaHei UI", 8),
+                font=(UI_FONT, 8),
             ).pack(anchor="w", padx=14, pady=(2, 10))
 
         self.name_var = tk.StringVar()
         self.parent_var = tk.StringVar(
             value=str(Path.home() / "Documents" / "AI Projects")
         )
-        self.profile_var = tk.StringVar(value="通用项目（general）")
+        self.profile_var = tk.StringVar(value="General project")
         self.git_var = tk.BooleanVar(value=True)
 
         form = tk.Frame(
@@ -334,10 +341,10 @@ class FactoryApp(tk.Tk):
         )
         form.grid(row=3, column=0, sticky="nsew")
         form.columnconfigure(1, weight=1)
-        self._field(form, 0, "项目名称", self.name_var)
-        self._field(form, 1, "保存位置", self.parent_var, self._choose_parent)
+        self._field(form, 0, "Project name", self.name_var)
+        self._field(form, 1, "Location", self.parent_var, self._choose_parent)
 
-        ttk.Label(form, text="项目类型", style="Card.TLabel").grid(
+        ttk.Label(form, text="Project type", style="Card.TLabel").grid(
             row=2, column=0, sticky="w", pady=8
         )
         ttk.Combobox(
@@ -346,17 +353,19 @@ class FactoryApp(tk.Tk):
             values=tuple(PROFILE_LABELS),
             state="readonly",
         ).grid(row=2, column=1, sticky="ew", padx=(14, 8), pady=8)
+        # Its own row rather than beside the combobox: the label is long
+        # enough that sharing a column would squeeze the path field.
         ttk.Checkbutton(
             form,
-            text="初始化本地 Git（不会提交或上传）",
+            text="Initialise a local Git repo (no commit, nothing uploaded)",
             variable=self.git_var,
-        ).grid(row=2, column=2, sticky="w", pady=8)
+        ).grid(row=3, column=1, columnspan=2, sticky="w", padx=(14, 0))
 
         ttk.Label(
             form,
-            text="初始想法（可选）",
+            text="Initial idea (optional)",
             style="Card.TLabel",
-        ).grid(row=3, column=0, sticky="nw", pady=8)
+        ).grid(row=4, column=0, sticky="nw", pady=8)
         self.idea_text = tk.Text(
             form,
             height=3,
@@ -367,12 +376,12 @@ class FactoryApp(tk.Tk):
             relief="solid",
             borderwidth=1,
             highlightthickness=0,
-            font=("Microsoft YaHei UI", 9),
+            font=(UI_FONT, 9),
             padx=8,
             pady=6,
         )
         self.idea_text.grid(
-            row=3,
+            row=4,
             column=1,
             columnspan=2,
             sticky="ew",
@@ -382,29 +391,32 @@ class FactoryApp(tk.Tk):
         ttk.Label(
             form,
             text=(
-                "它只作为启动访谈输入，不会被视为已经批准的 Contract。"
-                "留空也可以。"
+                "Seeds the opening interview. It is not treated as an "
+                "approved contract, and leaving it empty is fine."
             ),
             style="Card.TLabel",
-        ).grid(row=4, column=1, columnspan=2, sticky="w", padx=(14, 0))
+            wraplength=440,
+            justify="left",
+        ).grid(row=5, column=1, columnspan=2, sticky="w", padx=(14, 0))
 
         action_bar = ttk.Frame(tab, style="Page.TFrame")
         action_bar.grid(row=4, column=0, sticky="ew", pady=(16, 0))
         action_bar.columnconfigure(0, weight=1)
         ttk.Label(
             action_bar,
-            text="从 Discussion 开始，确认后进入 Goal。",
+            text="Starts in Discussion.\nMoves to Goal once you approve.",
             style="Subtitle.TLabel",
+            justify="left",
         ).grid(row=0, column=0, sticky="w")
         ttk.Button(
             action_bar,
-            text="只创建项目",
+            text="Create only",
             style="Secondary.TButton",
             command=lambda: self._create(start_codex=False),
         ).grid(row=0, column=1, padx=(12, 8))
         self.create_and_start_button = ttk.Button(
             action_bar,
-            text="创建并启动 Codex 讨论",
+            text="Create and open a Codex discussion",
             style="Primary.TButton",
             command=lambda: self._create(start_codex=True),
         )
@@ -413,12 +425,15 @@ class FactoryApp(tk.Tk):
     def _build_manage(self, tab: ttk.Frame) -> None:
         tab.columnconfigure(0, weight=1)
         tab.rowconfigure(8, weight=1)
-        ttk.Label(tab, text="项目控制台", style="Title.TLabel").grid(
+        ttk.Label(tab, text="Project console", style="Title.TLabel").grid(
             row=0, column=0, sticky="w"
         )
         ttk.Label(
             tab,
-            text="选择项目，查看状态、启动真实 Codex 任务或准备迁移。",
+            text=(
+                "Pick a project to read its state, start a real Codex task, "
+                "or prepare a handoff."
+            ),
             style="Subtitle.TLabel",
         ).grid(row=1, column=0, sticky="w", pady=(4, 14))
 
@@ -434,12 +449,12 @@ class FactoryApp(tk.Tk):
         recent_card.columnconfigure(0, weight=1)
         ttk.Label(
             recent_card,
-            text="最近项目",
+            text="Recent projects",
             style="CardTitle.TLabel",
         ).grid(row=0, column=0, sticky="w")
         ttk.Button(
             recent_card,
-            text="刷新",
+            text="Refresh",
             command=self._refresh_projects,
         ).grid(row=0, column=1, sticky="e")
         self.project_tree = ttk.Treeview(
@@ -450,10 +465,10 @@ class FactoryApp(tk.Tk):
             style="Factory.Treeview",
             selectmode="browse",
         )
-        self.project_tree.heading("#0", text="项目")
-        self.project_tree.heading("state", text="模式 / Goal")
+        self.project_tree.heading("#0", text="Project")
+        self.project_tree.heading("state", text="Mode / Goal")
         self.project_tree.heading("handoff", text="Handoff")
-        self.project_tree.heading("updated", text="最近更新")
+        self.project_tree.heading("updated", text="Updated")
         self.project_tree.column("#0", width=230, minwidth=170)
         self.project_tree.column("state", width=155, minwidth=120)
         self.project_tree.column("handoff", width=90, minwidth=75)
@@ -468,15 +483,15 @@ class FactoryApp(tk.Tk):
         path_row.grid(row=3, column=0, sticky="ew", pady=(10, 8))
         path_row.columnconfigure(1, weight=1)
         self._field(
-            path_row, 0, "当前项目", self.project_var, self._choose_project
+            path_row, 0, "Current project", self.project_var, self._choose_project
         )
 
         badges = ttk.Frame(tab, style="Page.TFrame")
         badges.grid(row=4, column=0, sticky="ew", pady=(0, 8))
-        self.mode_badge_var = tk.StringVar(value="模式：未选择")
-        self.goal_badge_var = tk.StringVar(value="Goal：未选择")
-        self.handoff_badge_var = tk.StringVar(value="Handoff：未检查")
-        self.version_badge_var = tk.StringVar(value="Factory：未知")
+        self.mode_badge_var = tk.StringVar(value="Mode: none selected")
+        self.goal_badge_var = tk.StringVar(value="Goal: none selected")
+        self.handoff_badge_var = tk.StringVar(value="Handoff: not checked")
+        self.version_badge_var = tk.StringVar(value="Factory: unknown")
         for index, variable in enumerate(
             (
                 self.mode_badge_var,
@@ -493,7 +508,7 @@ class FactoryApp(tk.Tk):
 
         self.codex_launch_button = ttk.Button(
             tab,
-            text="启动 / 继续 Codex 任务",
+            text="Start / continue the Codex task",
             command=self._launch_codex,
             style="Primary.TButton",
         )
@@ -507,12 +522,12 @@ class FactoryApp(tk.Tk):
         for column in range(3):
             actions.columnconfigure(column, weight=1)
         buttons = (
-            ("查看项目状态", self._status),
-            ("运行完整验证", self._doctor),
-            ("刷新交接检查点", self._checkpoint),
-            ("导出网页 / API 包", self._export),
-            ("复制准备切换提示", lambda: self._copy_prompt("prepare")),
-            ("打开项目目录", self._open_project),
+            ("Project state", self._status),
+            ("Full validation", self._doctor),
+            ("Refresh handoff checkpoint", self._checkpoint),
+            ("Export web / API bundle", self._export),
+            ("Copy: prepare to switch", lambda: self._copy_prompt("prepare")),
+            ("Open project folder", self._open_project),
         )
         for index, (label, command) in enumerate(buttons):
             ttk.Button(
@@ -534,9 +549,9 @@ class FactoryApp(tk.Tk):
             migration.columnconfigure(column, weight=1)
         for index, (label, command) in enumerate(
             (
-                ("复制启动 / 继续提示", lambda: self._copy_prompt("start")),
-                ("复制新 Agent 接管提示", lambda: self._copy_prompt("takeover")),
-                ("安装本机 Agent 集成", self._sync_adapters),
+                ("Copy: start / continue", lambda: self._copy_prompt("start")),
+                ("Copy: new agent takeover", lambda: self._copy_prompt("takeover")),
+                ("Install local agent integration", self._sync_adapters),
             )
         ):
             ttk.Button(
@@ -558,17 +573,18 @@ class FactoryApp(tk.Tk):
             highlightthickness=1,
             padx=12,
             pady=10,
-            font=("Cascadia Mono", 9),
+            font=(MONO_FONT, 9),
         )
         self.output.grid(row=8, column=0, sticky="nsew")
         self.output.configure(state="disabled")
         self._set_output(
-            "选择最近项目，或用“浏览”指定其他 Factory 项目。\n\n"
-            "主按钮会创建一个真实可见的启动确认轮次：首条用户消息包含完整"
-            "项目输入，Codex 只生成一张简短启动确认，不读取文件或调用工具。"
-            "任务和首轮创建后会立即打开；启动卡通常约 10–20 秒生成完成。"
-            "完成后回复“继续”，再开始真实访谈。只有"
-            " App Server 不可用或确认超时，才退回需要手动发送的预填草稿。"
+            "Pick a recent project, or use Browse to point at another "
+            "Factory project.\n\n"
+            "The main button creates a real, visible opening turn: the first "
+            "user message carries your full input, and Codex answers with one "
+            "short start card without reading files or calling tools. The "
+            "task opens as soon as it exists; the card usually takes 10-20 "
+            'seconds. Reply "continue" to begin the real interview.'
         )
 
     def _show_page(self, name: str) -> None:
@@ -622,35 +638,38 @@ class FactoryApp(tk.Tk):
         self.project_var.set(str(summary.project_path))
         self._set_summary_badges(summary)
         self._set_output(
-            f"已选择：{summary.project_name}\n"
-            f"目录：{summary.project_path}\n"
-            f"状态：{summary.mode} / {summary.goal_status}\n"
-            f"Handoff revision：{summary.handoff_revision}\n\n"
-            "可以直接启动 Codex，或先运行“查看项目状态 / 完整验证”。"
+            f"Selected: {summary.project_name}\n"
+            f"Folder: {summary.project_path}\n"
+            f"State: {summary.mode} / {summary.goal_status}\n"
+            f"Handoff revision: {summary.handoff_revision}\n\n"
+            "You can start Codex now, or read the project state and run the "
+            "full validation first."
         )
 
     def _set_summary_badges(self, summary: ProjectSummary) -> None:
-        self.mode_badge_var.set(f"模式：{summary.mode}")
-        self.goal_badge_var.set(f"Goal：{summary.goal_status}")
-        self.handoff_badge_var.set(f"Handoff：r{summary.handoff_revision}")
-        self.version_badge_var.set(f"Factory：{summary.factory_version}")
+        self.mode_badge_var.set(f"Mode: {summary.mode}")
+        self.goal_badge_var.set(f"Goal: {summary.goal_status}")
+        self.handoff_badge_var.set(f"Handoff: r{summary.handoff_revision}")
+        self.version_badge_var.set(f"Factory: {summary.factory_version}")
 
     def _choose_parent(self) -> None:
-        selected = filedialog.askdirectory(title="选择新项目的父目录")
+        selected = filedialog.askdirectory(
+            title="Choose the parent folder for the new project"
+        )
         if selected:
             self.parent_var.set(selected)
             self._refresh_projects()
 
     def _choose_project(self) -> None:
-        selected = filedialog.askdirectory(title="选择 Factory 项目目录")
+        selected = filedialog.askdirectory(title="Choose a Factory project folder")
         if selected:
             self.project_var.set(selected)
-            self.status_var.set("已选择项目，可查看状态或启动 Codex")
+            self.status_var.set("Project selected")
 
     def _project(self) -> Path:
         raw = self.project_var.get().strip()
         if not raw:
-            raise FactoryError("请先选择项目目录。")
+            raise FactoryError("Choose a project folder first.")
         return Path(raw)
 
     def _selected_project(self) -> Path | None:
@@ -725,7 +744,7 @@ class FactoryApp(tk.Tk):
     ) -> None:
         if self._busy:
             self.bell()
-            self.status_var.set("已有操作正在进行，请等待完成")
+            self.status_var.set("Another operation is running; please wait")
             return
         self._set_busy(True)
         self.status_var.set(label)
@@ -762,16 +781,18 @@ class FactoryApp(tk.Tk):
     def _on_close(self) -> None:
         if self._busy:
             messagebox.showinfo(
-                "操作仍在进行",
-                "当前操作尚未结束。为避免留下半创建项目或中断正在启动的 Codex "
-                "任务，Factory 会在这段短操作完成后再允许关闭。",
+                "Operation still running",
+                "The current operation has not finished. To avoid leaving a "
+                "half-created project or interrupting a Codex task that is "
+                "starting, Factory will allow closing once this short "
+                "operation completes.",
             )
             return
         self._closing = True
         self.destroy()
 
     def _failed(self, exc: Exception) -> None:
-        self.status_var.set("操作失败")
+        self.status_var.set("Operation failed")
         message = str(exc)
         if hasattr(self, "output"):
             self._set_output(message, error=True)
@@ -780,7 +801,7 @@ class FactoryApp(tk.Tk):
     def _create(self, start_codex: bool = True) -> None:
         profile = PROFILE_LABELS.get(self.profile_var.get())
         if profile not in PROFILES:
-            self._failed(FactoryError("请选择有效的项目类型。"))
+            self._failed(FactoryError("Choose a valid project type."))
             return
         request = CreateProjectRequest(
             parent=Path(self.parent_var.get()),
@@ -802,27 +823,31 @@ class FactoryApp(tk.Tk):
                     initial_context=self.idea_text.get("1.0", "end").strip(),
                 )
             else:
-                self.status_var.set("项目已创建")
+                self.status_var.set("Project created")
                 self._set_output(
-                    f"项目已安全创建：\n{self.last_project}\n\n"
-                    "当前状态为 Discussion / none。"
-                    "需要时点击“启动 / 继续 Codex 任务”。"
+                    f"Project created safely:\n{self.last_project}\n\n"
+                    "It starts in Discussion / none. Use "
+                    '"Start / continue the Codex task" when you are ready.'
                 )
 
-        self._background("正在原子创建并校验项目…", lambda: create_project(request), done)
+        self._background(
+            "Creating and validating the project atomically…",
+            lambda: create_project(request),
+            done,
+        )
 
     def _relay(self, raw: object, label: str) -> None:
         result = raw
         text = (result.stdout + result.stderr).strip()  # type: ignore[attr-defined]
         self._set_output(text or label, error=not result.ok)  # type: ignore[attr-defined]
-        self.status_var.set(label if result.ok else "操作失败")  # type: ignore[attr-defined]
+        self.status_var.set(label if result.ok else "Operation failed")  # type: ignore[attr-defined]
 
     def _status(self) -> None:
         project = self._selected_project()
         if project is None:
             return
         self._background(
-            "正在读取状态…",
+            "Reading state…",
             lambda: inspect_project(project),
             self._show_status,
         )
@@ -830,81 +855,84 @@ class FactoryApp(tk.Tk):
     def _show_status(self, raw: object) -> None:
         result = raw
         if not result.ok:  # type: ignore[attr-defined]
-            self._relay(result, "状态读取失败")
+            self._relay(result, "Could not read the state")
             return
         try:
             state = json.loads(result.stdout)  # type: ignore[attr-defined]
         except (TypeError, json.JSONDecodeError):
-            self._relay(result, "状态已刷新")
+            self._relay(result, "State refreshed")
             return
         mode = {
-            "discussion": "Discussion（可讨论、调整、pushback）",
-            "goal": "Goal（按已确认目标持续执行）",
+            "discussion": "Discussion (open to debate, changes, pushback)",
+            "goal": "Goal (executing an approved objective)",
         }.get(str(state.get("mode")), str(state.get("mode")))
         goal_status = {
-            "none": "尚未建立 Goal",
-            "active": "执行中",
-            "paused": "已暂停",
-            "blocked": "被真实阻塞",
-            "completed": "已完成",
-            "needs_revision": "Contract 需要重议",
+            "none": "no goal yet",
+            "active": "in progress",
+            "paused": "paused",
+            "blocked": "genuinely blocked",
+            "completed": "completed",
+            "needs_revision": "contract needs revisiting",
         }.get(str(state.get("goal_status")), str(state.get("goal_status")))
         fresh = bool(state.get("handoff_fresh"))
-        self.mode_badge_var.set(f"模式：{state.get('mode', 'unknown')}")
-        self.goal_badge_var.set(f"Goal：{state.get('goal_status', 'unknown')}")
+        self.mode_badge_var.set(f"Mode: {state.get('mode', 'unknown')}")
+        self.goal_badge_var.set(f"Goal: {state.get('goal_status', 'unknown')}")
         self.handoff_badge_var.set(
-            "Handoff：最新" if fresh else "Handoff：需更新"
+            "Handoff: current" if fresh else "Handoff: needs update"
         )
         self.version_badge_var.set(
-            f"Factory：{state.get('factory_version', 'unknown')}"
+            f"Factory: {state.get('factory_version', 'unknown')}"
         )
         next_hint = (
-            "可以切换聊天或 Agent。"
+            "Safe to switch chats or agents."
             if fresh
-            else "先让当前 Agent 更新 HANDOFF，再刷新交接检查点。"
+            else "Have the current agent update HANDOFF, then refresh the "
+            "checkpoint."
         )
         self._set_output(
             "\n".join(
                 (
-                    f"项目：{state.get('project_name', 'unknown')}",
-                    f"当前模式：{mode}",
-                    f"Goal 状态：{goal_status}",
-                    f"Contract revision：{state.get('contract_revision', 'unknown')}",
-                    f"Goal revision：{state.get('active_goal_revision', 'unknown')}",
-                    f"Handoff：{'已验证为最新' if fresh else '需要更新'}",
+                    f"Project: {state.get('project_name', 'unknown')}",
+                    f"Mode: {mode}",
+                    f"Goal status: {goal_status}",
+                    f"Contract revision: {state.get('contract_revision', 'unknown')}",
+                    f"Goal revision: {state.get('active_goal_revision', 'unknown')}",
+                    f"Handoff: {'verified current' if fresh else 'needs update'}",
                     "",
-                    f"建议：{next_hint}",
+                    f"Suggested next step: {next_hint}",
                 )
             )
         )
-        self.status_var.set("状态已刷新")
+        self.status_var.set("State refreshed")
 
     def _doctor(self) -> None:
         project = self._selected_project()
         if project is None:
             return
         self._background(
-            "正在执行完整验证…",
+            "Running the full validation…",
             lambda: doctor_project(project, deep=True),
-            lambda result: self._relay(result, "验证完成"),
+            lambda result: self._relay(result, "Validation finished"),
         )
 
     def _checkpoint(self) -> None:
         if not messagebox.askokcancel(
-            "刷新交接检查点",
-            "请确认当前 Agent 已把语义状态写入 HANDOFF.md。\n\n"
-            "Factory 将刷新 revision 和 fingerprints，但不会读取聊天补写摘要。",
+            "Refresh handoff checkpoint",
+            "Confirm that the current agent has written the semantic state "
+            "into HANDOFF.md.\n\n"
+            "Factory refreshes revisions and fingerprints. It does not read "
+            "your chat, and will not invent a summary.",
         ):
             return
         project = self._selected_project()
         if project is None:
             return
         self._background(
-            "正在刷新交接检查点…",
+            "Refreshing the handoff checkpoint…",
             lambda: checkpoint_project(
                 project, updated_by="factory-gui", status="ready_for_compact"
             ),
-            lambda result: self._relay(result, "交接检查点已刷新"),
+            lambda result: self._relay(result, "Handoff checkpoint refreshed"),
         )
 
     def _export(self) -> None:
@@ -912,7 +940,7 @@ class FactoryApp(tk.Tk):
         if project is None:
             return
         selected = filedialog.asksaveasfilename(
-            title="保存给网页或 API 模型的 Context Bundle",
+            title="Save a context bundle for a web or API model",
             initialdir=str(project.parent),
             initialfile=f"{project.name}_CONTEXT_BUNDLE.md",
             defaultextension=".md",
@@ -923,17 +951,18 @@ class FactoryApp(tk.Tk):
         output = Path(selected)
 
         def done(raw: object) -> None:
-            self._relay(raw, "网页/API 迁移包已导出")
+            self._relay(raw, "Context bundle exported")
             result = raw
             if result.ok:  # type: ignore[attr-defined]
                 messagebox.showinfo(
-                    "导出完成",
-                    f"Context Bundle 已保存：\n{output}\n\n"
-                    "请只额外上传目标模型当前任务真正需要的附件。",
+                    "Export complete",
+                    f"Context bundle saved:\n{output}\n\n"
+                    "Upload only the extra attachments the target model "
+                    "genuinely needs for the task at hand.",
                 )
 
         self._background(
-            "正在验证并导出迁移包…",
+            "Validating and exporting the bundle…",
             lambda: export_project(project, output),
             done,
         )
@@ -952,15 +981,15 @@ class FactoryApp(tk.Tk):
     ) -> None:
         def started(thread_id: str, _deep_link: str) -> None:
             def update() -> None:
-                self.status_var.set("Codex 已打开，正在生成可见启动确认")
+                self.status_var.set("Codex is open, writing the start card")
                 self._set_output(
-                    f"真实 Codex 任务和首轮已创建，Codex 已打开并正在生成"
-                    f"可见启动确认。\n\n"
-                    f"项目：{project}\n"
-                    f"任务 ID：{thread_id}\n\n"
-                    "这一步只让模型输出固定启动卡，不读取文件，也不调用"
-                    " Token Bridge、连接器或其他工具，通常约 10–20 秒。"
-                    "你可以直接在 Codex 中看到生成过程。"
+                    "A real Codex task and its first turn exist, and Codex is "
+                    "open and writing the visible start card.\n\n"
+                    f"Project: {project}\n"
+                    f"Task ID: {thread_id}\n\n"
+                    "This turn only prints a fixed start card. It reads no "
+                    "files and calls no tools, so it usually takes 10-20 "
+                    "seconds, and you can watch it happen in Codex."
                 )
 
             self._post_to_ui(update)
@@ -978,41 +1007,44 @@ class FactoryApp(tk.Tk):
             result = raw
             if result.method == "app-server":  # type: ignore[attr-defined]
                 detail = (
-                    f"\n\n提示：{result.detail}"  # type: ignore[attr-defined]
+                    f"\n\nNote: {result.detail}"  # type: ignore[attr-defined]
                     if result.detail  # type: ignore[attr-defined]
                     else ""
                 )
                 prefix = (
-                    "项目已创建，真实 Codex 任务也已启动。"
+                    "Project created, and a real Codex task started."
                     if created
-                    else "真实 Codex 任务已启动。"
+                    else "Real Codex task started."
                 )
                 self._set_output(
                     f"{prefix}\n\n"
-                    f"项目：{result.project_path}\n"  # type: ignore[attr-defined]
-                    f"任务 ID：{result.thread_id}\n"  # type: ignore[attr-defined]
-                    f"交接状态：{result.turn_status}"  # type: ignore[attr-defined]
+                    f"Project: {result.project_path}\n"  # type: ignore[attr-defined]
+                    f"Task ID: {result.thread_id}\n"  # type: ignore[attr-defined]
+                    f"Turn status: {result.turn_status}"  # type: ignore[attr-defined]
                     f"{detail}\n\n"
-                    "初始想法已经作为真实首轮用户消息显示，Codex 的启动确认"
-                    "不是项目研究结论。现在请在已打开的 Codex 任务中回复"
-                    "“继续”或直接补充要求，真实访谈和 Token Bridge 等动作"
-                    "会在可见任务中执行。"
+                    "Your initial idea is visible as a real first user "
+                    "message, and the start card is an acknowledgement rather "
+                    'than research. Reply "continue" in the open Codex task, '
+                    "or add requirements directly; the real interview happens "
+                    "there where you can see it."
                 )
-                self.status_var.set("Codex 已打开，回复“继续”开始访谈")
+                self.status_var.set('Codex open — reply "continue" to begin')
                 return
 
             self.clipboard_clear()
             self.clipboard_append(result.prompt)  # type: ignore[attr-defined]
             self.update()
             self._set_output(
-                "Codex App Server 未能创建真实任务，已安全退回预填草稿。\n\n"
-                f"项目：{result.project_path}\n\n"  # type: ignore[attr-defined]
-                f"原因：{result.detail}\n\n"  # type: ignore[attr-defined]
-                "请在 Codex 中检查提示后手动发送；提示已复制到剪贴板。"
+                "The Codex App Server could not create a real task, so "
+                "Factory fell back to a prefilled draft.\n\n"
+                f"Project: {result.project_path}\n\n"  # type: ignore[attr-defined]
+                f"Reason: {result.detail}\n\n"  # type: ignore[attr-defined]
+                "Check the prompt in Codex and send it yourself. It is also "
+                "on your clipboard."
             )
-            self.status_var.set("Codex 草稿已打开，等待手动发送")
+            self.status_var.set("Codex draft open, waiting for you to send")
 
-        self._background("正在创建并发送 Codex 任务…", action, done)
+        self._background("Creating and sending the Codex task…", action, done)
 
     def _launch_codex(self) -> None:
         project = self._selected_project()
@@ -1030,22 +1062,25 @@ class FactoryApp(tk.Tk):
             self.clipboard_append(prompt)
             self.update()
             self._set_output(
-                f"已复制提示，可粘贴给在此目录工作的 Agent：\n\n{prompt}"
+                "Copied. Paste this to an agent working in this folder:\n\n"
+                f"{prompt}"
             )
-            self.status_var.set("Agent 提示已复制")
+            self.status_var.set("Agent prompt copied")
         except Exception as exc:
             self._failed(exc)
 
     def _sync_adapters(self) -> None:
         if not messagebox.askyesno(
-            "安装本机 Agent 集成",
-            "这会在当前用户目录中安装或刷新由 Factory 管理的 Codex 与"
-            " Claude Code Skill。\n\n"
-            "它不会传输项目，不会影响云端/Cowork，也不会覆盖非 Factory 管理"
-            "的同名 Skill。已安装 Skill 仍会调用当前这份 Factory；移动或删除"
-            " Factory 后需要重新同步。\n\n如果某个项目另有同名 Skill，Codex"
-            " 与 Claude Code 的优先/展示行为不同，需要你自行确认实际加载版本。"
-            "\n\n继续吗？",
+            "Install local agent integration",
+            "This installs or refreshes the Factory-managed Codex and Claude "
+            "Code skills in your user profile.\n\n"
+            "It uploads nothing, does not affect cloud sessions, and will not "
+            "overwrite a skill of the same name that Factory does not manage. "
+            "The installed skill calls this copy of Factory, so re-run it if "
+            "you move or delete this folder.\n\n"
+            "If a project defines a skill with the same name, Codex and "
+            "Claude Code resolve the conflict differently, so check which one "
+            "actually loads.\n\nContinue?",
         ):
             return
 
@@ -1066,13 +1101,14 @@ class FactoryApp(tk.Tk):
 
         def done(raw: object) -> None:
             self._set_output(
-                "本机 Codex 与 Claude Code 集成已安装：\n"
+                "Local Codex and Claude Code integration installed:\n"
                 + str(raw)
-                + "\n\n请新建或重新打开 Agent 会话，让运行时重新发现 Skill。"
+                + "\n\nStart a new agent session, or reopen the current one, "
+                "so the runtime rediscovers the skill."
             )
-            self.status_var.set("本机 Agent 集成已安装")
+            self.status_var.set("Local agent integration installed")
 
-        self._background("正在安装本机 Agent 集成…", action, done)
+        self._background("Installing the local agent integration…", action, done)
 
 
 def launch_gui(smoke_test: bool = False) -> None:

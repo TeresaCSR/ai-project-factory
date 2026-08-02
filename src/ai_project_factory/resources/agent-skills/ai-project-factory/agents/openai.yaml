@@ -1,4 +1,4 @@
 interface:
   display_name: "AI Project Factory"
-  short_description: "创建、恢复、验证、持续执行并迁移模型无关的 AI 项目工程"
+  short_description: "Create, resume, verify, execute, and migrate model-agnostic AI projects"
   default_prompt: "Use $ai-project-factory to create a portable AI project and begin its kickoff discussion."

@@ -121,7 +121,7 @@ def main(argv: list[str] | None = None) -> int:
             )
             print("\n".join(str(destination) for destination in destinations))
             return 0
-        raise FactoryError(f"不支持的命令：{args.command}")
+        raise FactoryError(f"Unsupported command: {args.command}")
     except FactoryError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
