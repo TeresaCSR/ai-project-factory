@@ -112,6 +112,8 @@ class PortableReleaseTests(unittest.TestCase):
                 cwd=portable,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 timeout=30,
             )
             self.assertEqual(gui.returncode, 0, gui.stdout + gui.stderr)
@@ -132,6 +134,8 @@ class PortableReleaseTests(unittest.TestCase):
                 cwd=portable,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 timeout=60,
             )
             self.assertEqual(created.returncode, 0, created.stdout + created.stderr)
@@ -147,6 +151,8 @@ class PortableReleaseTests(unittest.TestCase):
                 cwd=portable,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 timeout=60,
             )
             self.assertEqual(doctor.returncode, 0, doctor.stdout + doctor.stderr)
@@ -194,6 +200,8 @@ class PortableReleaseTests(unittest.TestCase):
                 ],
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 timeout=120,
                 check=False,
             )
@@ -213,6 +221,8 @@ class PortableReleaseTests(unittest.TestCase):
                 ],
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 timeout=30,
                 check=False,
             )
@@ -229,6 +239,8 @@ class PortableReleaseTests(unittest.TestCase):
                 ],
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 timeout=30,
                 check=False,
             )
@@ -263,6 +275,8 @@ class PortableReleaseTests(unittest.TestCase):
                 ],
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 timeout=60,
                 check=False,
             )
@@ -286,6 +300,8 @@ class PortableReleaseTests(unittest.TestCase):
                 ],
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 timeout=60,
                 check=False,
             )
@@ -307,6 +323,8 @@ class PortableReleaseTests(unittest.TestCase):
                 ],
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 timeout=60,
                 check=False,
             )
@@ -332,6 +350,8 @@ class PortableReleaseTests(unittest.TestCase):
                 ],
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 timeout=60,
                 check=False,
             )
@@ -351,6 +371,8 @@ class PortableReleaseTests(unittest.TestCase):
                 ],
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 timeout=60,
                 check=False,
             )
@@ -372,6 +394,8 @@ class PortableReleaseTests(unittest.TestCase):
                 ],
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 timeout=60,
                 check=False,
             )

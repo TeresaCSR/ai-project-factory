@@ -331,6 +331,8 @@ class FactoryTests(unittest.TestCase):
                 ],
                 cwd=project,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 capture_output=True,
             )
             self.assertNotEqual(direct_export.returncode, 0)
@@ -414,6 +416,8 @@ class FactoryTests(unittest.TestCase):
                     cwd=project,
                     input=content,
                     text=True,
+                    encoding="utf-8",
+                    errors="replace",
                     capture_output=True,
                     check=True,
                 )
@@ -451,6 +455,8 @@ class FactoryTests(unittest.TestCase):
                 check=True,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
             ).stdout.splitlines()
             self.assertEqual(len(staged), 3)
             self.assertEqual(
@@ -577,6 +583,8 @@ module.leave_goal("paused", "user_paused", "crash test", "test-agent")
                 cwd=project,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
             )
             self.assertEqual(crashed.returncode, 99)
             self.assertTrue(
@@ -624,6 +632,8 @@ module.leave_goal("paused", "user_paused", "crash test", "test-agent")
                 cwd=project,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
             )
             self.assertEqual(crashed.returncode, 99)
             goal = project / "ACTIVE_GOAL.md"
@@ -666,6 +676,8 @@ module.checkpoint("test-agent")
                 cwd=project,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
             )
             self.assertEqual(crashed.returncode, 98)
             journal_path = project / ".ai" / "lifecycle_transaction.json"
@@ -704,6 +716,8 @@ module.checkpoint("test-agent")
                         cwd=project,
                         capture_output=True,
                         text=True,
+                        encoding="utf-8",
+                        errors="replace",
                     )
                     self.assertEqual(crashed.returncode, 95)
                     temp_dir = project / ".ai" / "runtime-tmp"
@@ -747,6 +761,8 @@ with module.project_lock():
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
             )
             self.assertEqual(holder.stdout.readline().strip(), "LOCKED")
             started = time.monotonic()
@@ -792,6 +808,8 @@ with module.project_lock():
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
             )
             self.assertEqual(holder.stdout.readline().strip(), "READY")
             checked = subprocess.run(
@@ -805,6 +823,8 @@ with module.project_lock():
                 cwd=project,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 timeout=15,
             )
             self.assertNotEqual(checked.returncode, 0)
@@ -826,6 +846,8 @@ with module.project_lock():
                 cwd=project,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 timeout=15,
             )
             remaining_stdout, remaining_stderr = holder.communicate(timeout=10)
@@ -871,6 +893,8 @@ with module.project_lock():
                 cwd=project,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
             )
             self.assertNotEqual(exported.returncode, 0)
             self.assertIn(
@@ -1021,6 +1045,8 @@ core.sync_agent_skills(
                 cwd=ROOT,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
             )
             self.assertEqual(crashed.returncode, 94)
             self.assertFalse((first / "protected.txt").exists())
@@ -1104,13 +1130,15 @@ core.sync_agent_skills(
                 cwd=ROOT,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
             )
             self.assertEqual(crashed.returncode, 92)
             manual = first_root / "ai-project-factory" / "manual-after-crash.txt"
             manual.write_text("preserve me", encoding="utf-8")
             with self.assertRaisesRegex(
                 FactoryError,
-                "事务之外的修改|人工修改",
+                "outside the transaction|edited by hand",
             ):
                 sync_agent_skills((first_root, second_root), ROOT)
             self.assertEqual(manual.read_text("utf-8"), "preserve me")
@@ -1144,6 +1172,8 @@ core.sync_agent_skills(
                 cwd=ROOT,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
             )
             self.assertEqual(crashed.returncode, 91)
             self.assertTrue(
@@ -1260,6 +1290,8 @@ core.sync_agent_skills(
                 cwd=ROOT,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
             )
             self.assertEqual(crashed.returncode, 90)
             first_journal = json.loads(
@@ -1293,6 +1325,8 @@ with core.skill_sync_locks(roots):
                 cwd=ROOT,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
             )
             self.assertEqual(crashed_again.returncode, 89)
             for skill_root in (first_root, second_root):
@@ -1343,6 +1377,8 @@ core.sync_agent_skills(
                 cwd=ROOT,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
             )
             self.assertEqual(crashed.returncode, 88)
             ordered = tuple(
@@ -1443,6 +1479,8 @@ core.sync_agent_skills(
                 ],
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
             )
             if linked.returncode != 0:
                 self.skipTest(
@@ -1494,7 +1532,7 @@ core.sync_agent_skills(
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp) / "skills"
             nested = root / "nested"
-            with self.assertRaisesRegex(FactoryError, "不能互相嵌套"):
+            with self.assertRaisesRegex(FactoryError, "cannot nest inside one another"):
                 sync_agent_skills((root, nested), ROOT)
 
     def test_skill_sync_rejects_source_containment(self) -> None:
