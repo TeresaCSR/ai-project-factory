@@ -30,6 +30,9 @@ wheel_builder = importlib.util.module_from_spec(WHEEL_SPEC)
 WHEEL_SPEC.loader.exec_module(wheel_builder)
 
 
+HAS_SETUPTOOLS = importlib.util.find_spec("setuptools") is not None
+
+
 class PortableReleaseTests(unittest.TestCase):
     def test_package_and_factory_versions_are_synchronized(self) -> None:
         package_version = release_builder.project_version()
@@ -152,6 +155,11 @@ class PortableReleaseTests(unittest.TestCase):
                 "Portable cold start must not mutate the generated project with bytecode.",
             )
 
+    @unittest.skipUnless(
+        HAS_SETUPTOOLS,
+        "the wheel build uses --no-build-isolation, so the backend "
+        "must already be installed",
+    )
     def test_wheel_is_deterministic_and_cold_starts_in_fresh_venv(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

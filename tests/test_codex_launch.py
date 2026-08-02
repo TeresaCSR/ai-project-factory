@@ -137,6 +137,10 @@ class CodexLaunchTests(unittest.TestCase):
             0x00000010,
         )
 
+    @unittest.skipUnless(
+        sys.platform == "win32",
+        "startupinfo is a Windows-only subprocess concept",
+    )
     def test_app_server_uses_hidden_shared_console(self) -> None:
         fake = FakeAppServerProcess([])
         with (
@@ -165,6 +169,10 @@ class CodexLaunchTests(unittest.TestCase):
         )
         self.assertIsNotNone(launcher.call_args.kwargs["startupinfo"])
 
+    @unittest.skipUnless(
+        sys.platform == "win32",
+        "startupinfo is a Windows-only subprocess concept",
+    )
     def test_nested_memory_git_helpers_hide_windows_console(self) -> None:
         from ai_project_factory.runtime import project_memory
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import os
 import struct
 import sys
 import tempfile
@@ -12,6 +13,18 @@ from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def canonical(path: object) -> str:
+    """A path spelling that two references to the same location agree on.
+
+    Windows Script Host hands back 8.3 short names, so a shortcut created
+    under ``C:\\Users\\runneradmin`` reads back as ``C:\\Users\\RUNNER~1``.
+    Comparing the strings makes the test pass only where the account name is
+    eight characters or fewer -- which is why this passed locally and failed
+    on CI. ``realpath`` expands the short form, so both spellings meet.
+    """
+    return os.path.realpath(str(path)).casefold()
 SCRIPT = ROOT / "scripts" / "deploy_windows_desktop.py"
 SPEC = importlib.util.spec_from_file_location("_factory_desktop_deployer", SCRIPT)
 assert SPEC is not None and SPEC.loader is not None
@@ -192,20 +205,24 @@ class DesktopDeploymentTests(unittest.TestCase):
                 second_details["Arguments"],
             )
             self.assertEqual(
-                second_details["WorkingDirectory"].casefold(),
-                str(install_root).casefold(),
+                canonical(second_details["WorkingDirectory"]),
+                canonical(install_root),
             )
             self.assertEqual(
                 second_details["Description"],
                 desktop_deployer.MANAGED_DESCRIPTION,
             )
-            self.assertEqual(
-                second_details["IconLocation"].casefold(),
-                f"{second['icon']},0".casefold(),
-            )
-            self.assertIn(
-                str(install_root / "launch.vbs").casefold(),
-                second_details["Arguments"].casefold(),
+            icon_path, _, icon_index = second_details["IconLocation"].rpartition(",")
+            self.assertEqual(canonical(icon_path), canonical(second["icon"]))
+            self.assertEqual(icon_index, "0")
+            # The launcher path is embedded in a longer argument string, so
+            # canonicalise the needle and search the haystack the same way.
+            arguments = second_details["Arguments"]
+            launcher = str(install_root / "launch.vbs")
+            self.assertTrue(
+                canonical(launcher) in canonical(arguments)
+                or launcher.casefold() in arguments.casefold(),
+                f"launcher {launcher!r} not referenced by arguments {arguments!r}",
             )
             leftovers = [
                 path.name

@@ -42,6 +42,12 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y python3-tk
 
+      # The wheel builder passes --no-build-isolation so the build is
+      # reproducible, which means the backend has to be importable already.
+      # Without this the wheel test skips itself and the coverage is lost.
+      - name: Install the build backend
+        run: python -m pip install "setuptools>=68" wheel
+
       # Pillow is only needed to rebuild the brand assets. The suite skips
       # those tests without it, so this run proves the rest is dependency-free.
       - name: Test without optional dependencies

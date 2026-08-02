@@ -74,18 +74,46 @@ def collect_payload() -> dict[str, bytes]:
             relative = path.relative_to(ROOT).as_posix()
             payload[relative] = path.read_bytes()
 
-    machine_user = Path.home().name.encode("utf-8", errors="ignore")
-    leaked = [
-        relative
-        for relative, content in payload.items()
-        if len(machine_user) >= 3 and machine_user in content
-    ]
+    leaked = sorted(_paths_leaking_home(payload))
     if leaked:
         raise ValueError(
-            "Portable payload contains a machine-specific username: "
+            "Portable payload contains a machine-specific home directory: "
             + ", ".join(leaked)
         )
     return payload
+
+
+def _home_path_needles() -> list[bytes]:
+    """Byte patterns that would mean this machine's home directory leaked.
+
+    The thing worth blocking is an absolute path into somebody's home
+    directory, not the username on its own. Searching for the bare name is
+    what an earlier version did, and it misfires badly: on a machine whose
+    account is called ``runner``, ``admin`` or ``test``, every ordinary
+    identifier with that spelling reads as a leak. CI accounts are named
+    exactly those things.
+
+    So the needle is the home *path*, in the spellings it can appear in:
+    native separators, POSIX separators, and the doubled backslashes you get
+    once a Windows path has been through JSON or a Python literal.
+    """
+    home = str(Path.home())
+    variants = {home, home.replace("\\", "/"), home.replace("\\", "\\\\")}
+    return [v.encode("utf-8", errors="ignore") for v in variants if len(v) >= 4]
+
+
+def _paths_leaking_home(payload: dict[str, bytes]) -> set[str]:
+    needles = _home_path_needles()
+    if not needles:
+        return set()
+    # Compare case-insensitively: Windows paths are, and a payload that spells
+    # the drive letter differently is the same leak.
+    folded = [needle.lower() for needle in needles]
+    return {
+        relative
+        for relative, content in payload.items()
+        if any(needle in content.lower() for needle in folded)
+    }
 
 
 def manifest_bytes(version: str, payload: dict[str, bytes]) -> bytes:
