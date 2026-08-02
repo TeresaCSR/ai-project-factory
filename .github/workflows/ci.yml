@@ -38,9 +38,25 @@ jobs:
 
       # Tkinter is part of the standard library but is packaged separately on
       # Debian-family images, and the GUI module imports it at module scope.
-      - name: Install Tk on Linux
+      # Xvfb gives the cold-start tests a display: the smoke test really does
+      # construct the Tk app, and running it headless is the point -- skipping
+      # it would drop the one check that the product launches at all.
+      - name: Install Tk and a virtual display on Linux
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y python3-tk
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-tk xvfb
+          echo "DISPLAY=:99" >> "$GITHUB_ENV"
+
+      - name: Start Xvfb
+        if: runner.os == 'Linux'
+        run: |
+          Xvfb :99 -screen 0 1280x1024x24 > /dev/null 2>&1 &
+          for _ in $(seq 1 30); do
+            xdpyinfo -display :99 > /dev/null 2>&1 && break
+            sleep 0.5
+          done
+          xdpyinfo -display :99 > /dev/null
 
       # The wheel builder passes --no-build-isolation so the build is
       # reproducible, which means the backend has to be importable already.

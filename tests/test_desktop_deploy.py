@@ -19,10 +19,15 @@ def canonical(path: object) -> str:
     """A path spelling that two references to the same location agree on.
 
     Windows Script Host hands back 8.3 short names, so a shortcut created
-    under ``C:\\Users\\runneradmin`` reads back as ``C:\\Users\\RUNNER~1``.
-    Comparing the strings makes the test pass only where the account name is
-    eight characters or fewer -- which is why this passed locally and failed
-    on CI. ``realpath`` expands the short form, so both spellings meet.
+    under a home directory whose account name is longer than eight characters
+    reads back in the truncated ``NAME~1`` form. Comparing the raw strings
+    therefore only passes where the account name is short -- which is why this
+    held locally and failed on CI. ``realpath`` expands the short form, so
+    both spellings meet.
+
+    (Deliberately no literal example path here: the portable-release guard
+    scans the payload for this machine's home directory, and on a runner whose
+    account matches the example, the comment itself would read as a leak.)
     """
     return os.path.realpath(str(path)).casefold()
 SCRIPT = ROOT / "scripts" / "deploy_windows_desktop.py"

@@ -41,6 +41,21 @@ class BrandAssetTests(unittest.TestCase):
 
     @unittest.skipIf(Image is None, "Pillow branding dependency is unavailable")
     def test_brand_build_is_deterministic_and_matches_checked_in_assets(self) -> None:
+        """Two separate claims, which need to be checked two different ways.
+
+        *Determinism* -- building twice gives identical bytes -- is a real
+        invariant and holds on every platform, so it is asserted on the raw
+        bytes.
+
+        *Matching what is committed* is not a byte-level property for the
+        raster formats. PNG and ICO embed zlib output, and zlib's exact
+        encoding varies between the versions Pillow is built against, so the
+        same source renders to different bytes on macOS than on Linux while
+        depicting exactly the same image. Comparing bytes there asserts the
+        build machine, not the artwork. The rasters are therefore compared by
+        decoded pixels, which is the thing that actually has to stay true;
+        the SVG is text and is compared exactly.
+        """
         with tempfile.TemporaryDirectory() as first_temp, tempfile.TemporaryDirectory() as second_temp:
             first_root = Path(first_temp) / "branding"
             second_root = Path(second_temp) / "branding"
@@ -56,8 +71,36 @@ class BrandAssetTests(unittest.TestCase):
             for relative in relative_paths:
                 first = (first_root / relative).read_bytes()
                 second = (second_root / relative).read_bytes()
-                self.assertEqual(first, second, str(relative))
-                self.assertEqual(first, (checked_in / relative).read_bytes())
+                self.assertEqual(first, second, f"not deterministic: {relative}")
+
+                committed = checked_in / relative
+                if relative.suffix == ".svg":
+                    self.assertEqual(first, committed.read_bytes(), str(relative))
+                else:
+                    self._assert_same_image(first_root / relative, committed)
+
+    def _assert_same_image(self, built: Path, committed: Path) -> None:
+        """Compare two raster files by what they depict, not by their bytes."""
+        with Image.open(built) as a, Image.open(committed) as b:
+            frames_a = sorted(a.ico.sizes()) if built.suffix == ".ico" else [a.size]
+            frames_b = sorted(b.ico.sizes()) if committed.suffix == ".ico" else [b.size]
+            self.assertEqual(frames_a, frames_b, f"frame sizes differ: {built.name}")
+
+            if built.suffix == ".ico":
+                for size in frames_a:
+                    a.size = size
+                    b.size = size
+                    self.assertEqual(
+                        a.convert("RGBA").tobytes(),
+                        b.convert("RGBA").tobytes(),
+                        f"{built.name} differs at {size[0]}px",
+                    )
+            else:
+                self.assertEqual(
+                    a.convert("RGBA").tobytes(),
+                    b.convert("RGBA").tobytes(),
+                    f"{built.name} pixels differ from the committed asset",
+                )
 
     @unittest.skipIf(Image is None, "Pillow branding dependency is unavailable")
     def test_ico_uses_optically_corrected_exact_frames(self) -> None:
