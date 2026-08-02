@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -114,6 +115,11 @@ class CodexLaunchTests(unittest.TestCase):
             self.assertIn("正常 Codex 宿主执行", prompt)
             self.assertIn("用户回复“继续”", prompt)
 
+    @unittest.skipIf(
+        os.name != "nt" and sys.version_info < (3, 12),
+        "this patches os.name to 'nt' globally, and before 3.12 pathlib "
+        "then refuses to construct a path on a POSIX host",
+    )
     def test_windows_commands_hide_console_subprocesses(self) -> None:
         completed = mock.Mock(returncode=0, stdout="", stderr="")
         with (
